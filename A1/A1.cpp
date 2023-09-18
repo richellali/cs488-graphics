@@ -54,6 +54,9 @@ void A1::init()
 	// DELETE FROM HERE...
 	m.digMaze();
 	m.printMaze();
+	const std::tuple<float, float> entry = m.getEntry();
+	avatar_pos.x = get<1>(entry);
+	avatar_pos.z = get<0>(entry);
 	// ...TO HERE
 
 	// Set the background colour.
@@ -73,7 +76,7 @@ void A1::init()
 	M_uni = m_shader.getUniformLocation("M");
 	col_uni = m_shader.getUniformLocation("colour");
 
-	// drawCube();
+	drawCube();
 	initGrid();
 	initAvatar();
 
@@ -93,7 +96,7 @@ void A1::init()
 void A1::drawCube()
 {
 	int sz = m.getBlockNum();
-	vec3 verts[3 * 12 * sz * block_size];
+	vec3 verts[3 * 12 * sz];
 
 	int i, j;
 	int cnt = 0;
@@ -105,56 +108,48 @@ void A1::drawCube()
 			if (m.getValue(i, j) == 1)
 			{
 				float x = float(j);
-				float y = 0.0f;
 				float z = float(i);
+				float y = float(block_size);
 
-				for (int cur_block_sz = 0; cur_block_sz < block_size; cur_block_sz++, y += 1.0f)
-				{
+				// for (int cur_block_sz = 0; cur_block_sz < block_size; cur_block_sz++, y += 1.0f)
+				// {
+					// front
+					verts[cnt++] = vec3(x, 0.0f, z);
+					verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
+					verts[cnt++] = vec3(x + 1.0f, y, z);
+
+					verts[cnt++] = vec3(x, 0.0f, z);
 					verts[cnt++] = vec3(x, y, z);
 					verts[cnt++] = vec3(x + 1.0f, y, z);
-					verts[cnt++] = vec3(x + 1.0f, y + 1.0f, z);
-
-					verts[cnt++] = vec3(x, y, z);
-					verts[cnt++] = vec3(x, y + 1.0f, z);
-					verts[cnt++] = vec3(x + 1.0f, y + 1.0f, z);
 
 					// left
-					verts[cnt++] = vec3(x, y, z);
-					verts[cnt++] = vec3(x, y + 1.0f, z);
-					verts[cnt++] = vec3(x, y + 1.0f, z + 1.0f);
-
+					verts[cnt++] = vec3(x, 0.0f, z);
 					verts[cnt++] = vec3(x, y, z);
 					verts[cnt++] = vec3(x, y, z + 1.0f);
-					verts[cnt++] = vec3(x, y + 1.0f, z + 1.0f);
+
+					verts[cnt++] = vec3(x, 0.0f, z);
+					verts[cnt++] = vec3(x, 0.0f, z + 1.0f);
+					verts[cnt++] = vec3(x, y, z + 1.0f);
 
 					// back
-					verts[cnt++] = vec3(x, y, z + 1.0f);
+					verts[cnt++] = vec3(x, 0.0f, z + 1.0f);
+					verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
 					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
-					verts[cnt++] = vec3(x + 1.0f, y + 1.0f, z + 1.0f);
 
+					verts[cnt++] = vec3(x, 0.0f, z + 1.0f),
 					verts[cnt++] = vec3(x, y, z + 1.0f),
-					verts[cnt++] = vec3(x, y + 1.0f, z + 1.0f),
-					verts[cnt++] = vec3(x + 1.0f, y + 1.0f, z + 1.0f),
+					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f),
 
 					// right
-						verts[cnt++] = vec3(x + 1.0f, y, z);
-					verts[cnt++] = vec3(x + 1.0f, y + 1.0f, z);
-					verts[cnt++] = vec3(x + 1.0f, y + 1.0f, z + 1.0f);
-
+						verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
 					verts[cnt++] = vec3(x + 1.0f, y, z);
 					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
-					verts[cnt++] = vec3(x + 1.0f, y + 1.0f, z + 1.0f);
+
+					verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
+					verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
+					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
 
 					// up
-					verts[cnt++] = vec3(x, y + 1.0f, z);
-					verts[cnt++] = vec3(x, y + 1.0f, z + 1.0f);
-					verts[cnt++] = vec3(x + 1.0f, y + 1.0f, z + 1.0f);
-
-					verts[cnt++] = vec3(x, y + 1.0f, z);
-					verts[cnt++] = vec3(x + 1.0f, y + 1.0f, z);
-					verts[cnt++] = vec3(x + 1.0f, y + 1.0f, z + 1.0f);
-
-					// bottom
 					verts[cnt++] = vec3(x, y, z);
 					verts[cnt++] = vec3(x, y, z + 1.0f);
 					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
@@ -162,7 +157,16 @@ void A1::drawCube()
 					verts[cnt++] = vec3(x, y, z);
 					verts[cnt++] = vec3(x + 1.0f, y, z);
 					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
-				}
+
+					// bottom
+					verts[cnt++] = vec3(x, 0.0f, z);
+					verts[cnt++] = vec3(x, 0.0f, z + 1.0f);
+					verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
+
+					verts[cnt++] = vec3(x, 0.0f, z);
+					verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
+					verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
+				// }
 			}
 		}
 	}
@@ -172,7 +176,7 @@ void A1::drawCube()
 
 	glGenBuffers(1, &cube_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, cube_vbo);
-	glBufferData(GL_ARRAY_BUFFER, 3 * 12 * sz * sizeof(vec3) * block_size, verts, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 3 * 12 * sz * sizeof(vec3), verts, GL_STATIC_DRAW);
 
 	GLint posAttrib = m_shader.getAttribLocation("position");
 	glEnableVertexAttribArray(posAttrib);
@@ -368,16 +372,6 @@ void A1::guiLogic()
  */
 void A1::draw()
 {
-	drawCube();
-
-	// glUniform3f(uniformLocation_colour, m_shape_color.r, m_shape_color.g,
-	// 			m_shape_color.b);
-
-	// 	vec3 z_axis(0.0f,0.0f,1.0f);
-	// 	mat4 transform = glm::translate(mat4(), vec3(m_shape_translation, 0.0f));
-	// 	transform *= glm::scale(mat4(), vec3(m_shape_size));
-	// 	transform *= glm::rotate(mat4(), m_shape_rotation, z_axis);
-
 	// Create a global transformation for the model (centre it).
 	mat4 W;
 	W = glm::translate(W, vec3(-float(DIM) / 2.0f, 0, -float(DIM) / 2.0f));
@@ -399,7 +393,7 @@ void A1::draw()
 	// Highlight the active square.
 	glBindVertexArray(cube_vao);
 	glUniform3f(col_uni, 1, 1, 1);
-	glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * m.getBlockNum() * block_size);
+	glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * m.getBlockNum());
 
 	glBindVertexArray(avatar_vao);
 	glUniform3f(col_uni, 1, 1, 1);
@@ -519,6 +513,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 			cout << "space key pressed - growing walls..." << endl;
 
 			block_size += 1;
+			drawCube();
 
 			eventHandled = true;
 		}
@@ -530,6 +525,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 			block_size -= 1;
 
 			block_size = block_size >= 1 ? block_size : 1;
+			drawCube();
 
 			eventHandled = true;
 		}

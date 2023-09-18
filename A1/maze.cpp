@@ -44,6 +44,17 @@ int Maze::getBlockNum() const
 	return block_num;
 }
 
+std::tuple<float, float> Maze::getEntry() const
+{
+	for (int j = 0; j < m_dim; j++) {
+		if (getValue(0, j) == 0) {
+			// guarantee to return here
+			return std::tuple<float, float> {0.0f, float(j)};
+		}
+	}
+	return std::tuple<float, float> {0.0f, 0.0f};
+}
+
 int perm[24][4] = {
 	0,1,2,3,
 	0,1,3,2,

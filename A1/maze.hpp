@@ -18,6 +18,8 @@ public:
 
 	int getBlockNum() const;
 
+	std::tuple<float, float> getEntry() const;
+
 	void digMaze();
 	void printMaze(); // for debugging
 private:
