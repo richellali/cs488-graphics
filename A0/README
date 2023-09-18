@@ -1,0 +1,11 @@
+COMPILATION:
+NO CHANGES TO DEFAULT COMPILATION
+STEP:
+premake4 gmake
+make
+./A0
+
+MANUAL:
+* Scaling up/down is done by adding/subtracting a constant factor. The size
+will be kept between 0 and 10. Once the triangle reaches the maximum, keeping 
+adding has no effect on the triangle. Same for the minimum.

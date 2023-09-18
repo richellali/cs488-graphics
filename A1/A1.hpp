@@ -45,14 +45,17 @@ private:
 	GLuint m_grid_vao; // Vertex Array Object
 	GLuint m_grid_vbo; // Vertex Buffer Object
 
-	// Walls related
+	// Walls related 
 	int block_size;
+	float block_col[3];
 	GLuint cube_vao;
 	GLuint cube_vbo;
 
 	Maze m;
+	float floor_col[3];
 
 	// avator
+	float avatar_col[3];
 	GLuint avatar_vao;
 	GLuint avatar_vbo;
 	glm::vec3 avatar_pos;
@@ -62,5 +65,7 @@ private:
 	glm::mat4 view;
 
 	float colour[3];
+
 	int current_col;
+	int current_widget;
 };

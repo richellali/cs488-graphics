@@ -22,14 +22,28 @@ static const float PI = 3.1415926;
 //----------------------------------------------------------------------------------------
 // Constructor
 A1::A1()
-	: current_col(0), m(Maze{DIM}), block_size(1), avatar_pos(vec3(0.0f))
+	: current_col(0), 
+	current_widget(0),
+	m(Maze{DIM}), 
+	block_size(1), 
+	avatar_pos(vec3(0.0f))
 {
 	colour[0] = 0.0f;
 	colour[1] = 0.0f;
 	colour[2] = 0.0f;
 
-	// avatar_pos[0] = 0.0f;
-	// avatar_pos[1] = 0.0f;
+	block_col[0] = 0.04f;
+	block_col[1] = 0.2f;
+	block_col[2] = 0.4f;
+
+	floor_col[0] = 1.0f;
+	floor_col[1] = 1.0f;
+	floor_col[2] = 1.0f;
+
+	avatar_col[0] = 1.0f;
+	avatar_col[1] = 1.0f;
+	avatar_col[2] = 1.0f;
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -336,17 +350,27 @@ void A1::guiLogic()
 
 	// Prefixing a widget name with "##" keeps it from being
 	// displayed.
+	
+	// Radio button: 0 - maze blocks, 1 - floor, 2 - avatar
+	ImGui::PushID(1);
+	ImGui::RadioButton("Block Colour", &current_widget, 0);
+	ImGui::RadioButton("Floor Colour", &current_widget, 1);
+	ImGui::RadioButton("Avatar Colour", &current_widget, 2);
+	ImGui::PopID();
 
+
+	// Set colour to the current widget
 	ImGui::PushID(0);
 	ImGui::ColorEdit3("##Colour", colour);
 	ImGui::SameLine();
 	if (ImGui::RadioButton("##Col", &current_col, 0))
 	{
 		// Select this colour.
+		cout << current_col << endl;
 	}
 	ImGui::PopID();
 
-	/*
+	
 			// For convenience, you can uncomment this to show ImGui's massive
 			// demonstration window right in your application.  Very handy for
 			// browsing around to get the widget you want.  Then look in
@@ -354,7 +378,7 @@ void A1::guiLogic()
 			if( ImGui::Button( "Test Window" ) ) {
 				showTestWindow = !showTestWindow;
 			}
-	*/
+	
 
 	ImGui::Text("Framerate: %.1f FPS", ImGui::GetIO().Framerate);
 
@@ -392,11 +416,12 @@ void A1::draw()
 	// Draw the cubes
 	// Highlight the active square.
 	glBindVertexArray(cube_vao);
-	glUniform3f(col_uni, 1, 1, 1);
+	glUniform3f(col_uni, block_col[0], block_col[1], block_col[2]);
 	glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * m.getBlockNum());
 
+	// Draw the Avatar
 	glBindVertexArray(avatar_vao);
-	glUniform3f(col_uni, 1, 1, 1);
+	glUniform3f(col_uni, avatar_col[0], avatar_col[1], avatar_col[2]);
 
 	W = glm::translate(W, avatar_pos);
 	glUniformMatrix4fv(M_uni, 1, GL_FALSE, value_ptr(W));
