@@ -4,6 +4,7 @@ Index_Example*/Makefile
 Instanced_Example*/Makefile
 shared/glfw**/Makefile
 shared/imgui**/Makefile
+shared/lua-5.4.6
 
 build
 
