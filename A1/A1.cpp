@@ -22,11 +22,11 @@ static const float PI = 3.1415926;
 //----------------------------------------------------------------------------------------
 // Constructor
 A1::A1()
-	: current_col(0), 
-	current_widget(0),
-	m(Maze{DIM}), 
-	block_size(1), 
-	avatar_pos(vec3(0.0f))
+	: current_col(0),
+	  current_widget(0),
+	  m(Maze{DIM}),
+	  block_size(1),
+	  avatar_pos(vec3(0.0f))
 {
 	colour[0] = 0.0f;
 	colour[1] = 0.0f;
@@ -43,7 +43,6 @@ A1::A1()
 	avatar_col[0] = 1.0f;
 	avatar_col[1] = 1.0f;
 	avatar_col[2] = 1.0f;
-
 }
 
 //----------------------------------------------------------------------------------------
@@ -68,7 +67,7 @@ void A1::init()
 	// DELETE FROM HERE...
 	m.digMaze();
 	m.printMaze();
-	const std::tuple<float, float> entry = m.getEntry();
+	std::tuple<float, float> entry = m.getEntry();
 	avatar_pos.x = get<1>(entry);
 	avatar_pos.z = get<0>(entry);
 	// ...TO HERE
@@ -127,59 +126,59 @@ void A1::drawCube()
 
 				// for (int cur_block_sz = 0; cur_block_sz < block_size; cur_block_sz++, y += 1.0f)
 				// {
-					// front
-					verts[cnt++] = vec3(x, 0.0f, z);
+				// front
+				verts[cnt++] = vec3(x, 0.0f, z);
+				verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
+				verts[cnt++] = vec3(x + 1.0f, y, z);
+
+				verts[cnt++] = vec3(x, 0.0f, z);
+				verts[cnt++] = vec3(x, y, z);
+				verts[cnt++] = vec3(x + 1.0f, y, z);
+
+				// left
+				verts[cnt++] = vec3(x, 0.0f, z);
+				verts[cnt++] = vec3(x, y, z);
+				verts[cnt++] = vec3(x, y, z + 1.0f);
+
+				verts[cnt++] = vec3(x, 0.0f, z);
+				verts[cnt++] = vec3(x, 0.0f, z + 1.0f);
+				verts[cnt++] = vec3(x, y, z + 1.0f);
+
+				// back
+				verts[cnt++] = vec3(x, 0.0f, z + 1.0f);
+				verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
+				verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
+
+				verts[cnt++] = vec3(x, 0.0f, z + 1.0f),
+				verts[cnt++] = vec3(x, y, z + 1.0f),
+				verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f),
+
+				// right
 					verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
-					verts[cnt++] = vec3(x + 1.0f, y, z);
+				verts[cnt++] = vec3(x + 1.0f, y, z);
+				verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
 
-					verts[cnt++] = vec3(x, 0.0f, z);
-					verts[cnt++] = vec3(x, y, z);
-					verts[cnt++] = vec3(x + 1.0f, y, z);
+				verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
+				verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
+				verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
 
-					// left
-					verts[cnt++] = vec3(x, 0.0f, z);
-					verts[cnt++] = vec3(x, y, z);
-					verts[cnt++] = vec3(x, y, z + 1.0f);
+				// up
+				verts[cnt++] = vec3(x, y, z);
+				verts[cnt++] = vec3(x, y, z + 1.0f);
+				verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
 
-					verts[cnt++] = vec3(x, 0.0f, z);
-					verts[cnt++] = vec3(x, 0.0f, z + 1.0f);
-					verts[cnt++] = vec3(x, y, z + 1.0f);
+				verts[cnt++] = vec3(x, y, z);
+				verts[cnt++] = vec3(x + 1.0f, y, z);
+				verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
 
-					// back
-					verts[cnt++] = vec3(x, 0.0f, z + 1.0f);
-					verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
-					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
+				// bottom
+				verts[cnt++] = vec3(x, 0.0f, z);
+				verts[cnt++] = vec3(x, 0.0f, z + 1.0f);
+				verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
 
-					verts[cnt++] = vec3(x, 0.0f, z + 1.0f),
-					verts[cnt++] = vec3(x, y, z + 1.0f),
-					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f),
-
-					// right
-						verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
-					verts[cnt++] = vec3(x + 1.0f, y, z);
-					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
-
-					verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
-					verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
-					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
-
-					// up
-					verts[cnt++] = vec3(x, y, z);
-					verts[cnt++] = vec3(x, y, z + 1.0f);
-					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
-
-					verts[cnt++] = vec3(x, y, z);
-					verts[cnt++] = vec3(x + 1.0f, y, z);
-					verts[cnt++] = vec3(x + 1.0f, y, z + 1.0f);
-
-					// bottom
-					verts[cnt++] = vec3(x, 0.0f, z);
-					verts[cnt++] = vec3(x, 0.0f, z + 1.0f);
-					verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
-
-					verts[cnt++] = vec3(x, 0.0f, z);
-					verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
-					verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
+				verts[cnt++] = vec3(x, 0.0f, z);
+				verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
+				verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
 				// }
 			}
 		}
@@ -320,6 +319,13 @@ void A1::appLogic()
 }
 
 //----------------------------------------------------------------------------------------
+void A1::assignColour(float (&src)[], float (&dst)[])
+{
+	dst[0] = src[0];
+	dst[1] = src[1];
+	dst[2] = src[2];
+}
+
 /*
  * Called once per frame, after appLogic(), but before the draw() method.
  */
@@ -350,7 +356,7 @@ void A1::guiLogic()
 
 	// Prefixing a widget name with "##" keeps it from being
 	// displayed.
-	
+
 	// Radio button: 0 - maze blocks, 1 - floor, 2 - avatar
 	ImGui::PushID(1);
 	ImGui::RadioButton("Block Colour", &current_widget, 0);
@@ -358,27 +364,57 @@ void A1::guiLogic()
 	ImGui::RadioButton("Avatar Colour", &current_widget, 2);
 	ImGui::PopID();
 
+	// check which is the current widget
+	switch (current_widget)
+	{
+	case 0:
+		assignColour(block_col, colour);
+		break;
+	case 1:
+		assignColour(floor_col, colour);
+		break;
+	case 2:
+		assignColour(avatar_col, colour);
+		break;
+	default:
+		cout << "No Radio Button is Selected." << endl;
+	}
+	cout << "selected obj: " << current_widget << endl;
 
 	// Set colour to the current widget
 	ImGui::PushID(0);
 	ImGui::ColorEdit3("##Colour", colour);
 	ImGui::SameLine();
-	if (ImGui::RadioButton("##Col", &current_col, 0))
+	if (ImGui::RadioButton("##Col", &current_col, 1))
 	{
 		// Select this colour.
-		cout << current_col << endl;
 	}
 	ImGui::PopID();
 
-	
-			// For convenience, you can uncomment this to show ImGui's massive
-			// demonstration window right in your application.  Very handy for
-			// browsing around to get the widget you want.  Then look in
-			// shared/imgui/imgui_demo.cpp to see how it's done.
-			if( ImGui::Button( "Test Window" ) ) {
-				showTestWindow = !showTestWindow;
-			}
-	
+	// Set colour in the selector to avatar, block floor
+	switch (current_widget)
+	{
+	case 0:
+		assignColour(colour, block_col);
+		break;
+	case 1:
+		assignColour(colour, floor_col);
+		break;
+	case 2:
+		assignColour(colour, avatar_col);
+		break;
+	default:
+		cout << "No Radio Button is Selected." << endl;
+	}
+
+	// For convenience, you can uncomment this to show ImGui's massive
+	// demonstration window right in your application.  Very handy for
+	// browsing around to get the widget you want.  Then look in
+	// shared/imgui/imgui_demo.cpp to see how it's done.
+	if (ImGui::Button("Test Window"))
+	{
+		showTestWindow = !showTestWindow;
+	}
 
 	ImGui::Text("Framerate: %.1f FPS", ImGui::GetIO().Framerate);
 
@@ -399,6 +435,7 @@ void A1::draw()
 	// Create a global transformation for the model (centre it).
 	mat4 W;
 	W = glm::translate(W, vec3(-float(DIM) / 2.0f, 0, -float(DIM) / 2.0f));
+	
 	mat4 center = W;
 
 	m_shader.enable();
@@ -561,11 +598,13 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.z - 1.0f >= 0.0f)
 			{
-				if (m.getValue(int(avatar_pos.z-1.0f), int(avatar_pos.x)) == 0) {
+				if (m.getValue(int(avatar_pos.z - 1.0f), int(avatar_pos.x)) == 0)
+				{
 					avatar_pos.z -= 1.0f;
 				}
-				
-			} else {
+			}
+			else
+			{
 				cout << "Limit reached - cannot move up" << endl;
 			}
 
@@ -578,11 +617,13 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.z + 1.0f < float(DIM))
 			{
-				if (m.getValue(int(avatar_pos.z+1.0f), int(avatar_pos.x)) == 0) {
+				if (m.getValue(int(avatar_pos.z + 1.0f), int(avatar_pos.x)) == 0)
+				{
 					avatar_pos.z += 1.0f;
 				}
-				
-			} else {
+			}
+			else
+			{
 				cout << "Limit reached - cannot move down" << endl;
 			}
 
@@ -595,11 +636,13 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.x - 1.0f >= 0.0f)
 			{
-				if (m.getValue(int(avatar_pos.z), int(avatar_pos.x-1.0f)) == 0) {
+				if (m.getValue(int(avatar_pos.z), int(avatar_pos.x - 1.0f)) == 0)
+				{
 					avatar_pos.x -= 1.0f;
 				}
-
-			} else {
+			}
+			else
+			{
 				cout << "Limit reached - cannot move left" << endl;
 			}
 
@@ -612,11 +655,13 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.x + 1.0f < float(DIM))
 			{
-				if (m.getValue(int(avatar_pos.z), int(avatar_pos.x+1.0f)) == 0) {
+				if (m.getValue(int(avatar_pos.z), int(avatar_pos.x + 1.0f)) == 0)
+				{
 					avatar_pos.x += 1.0f;
 				}
-
-			} else {
+			}
+			else
+			{
 				cout << "Limit reached - cannot move right" << endl;
 			}
 

@@ -1,6 +1,7 @@
 // Termm--Fall 2023
 
 #pragma once
+#include <tuple>
 
 class Maze
 {
@@ -18,7 +19,7 @@ public:
 
 	int getBlockNum() const;
 
-	std::tuple<float, float> getEntry() const;
+	std::tuple<float, float> getEntry();
 
 	void digMaze();
 	void printMaze(); // for debugging
