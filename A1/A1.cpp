@@ -33,6 +33,7 @@ A1::A1()
 	  // rotation
 	  prev_mouse_x(double(0)),
 	  m_shape_rotation(0.0f),
+	  insta_rotation_v(0.0f),
 	  m_mouse_GL_coordinate(vec2(0.0f)),
 
 	  // scale
@@ -49,9 +50,9 @@ A1::A1()
 	block_col[1] = 0.2f;
 	block_col[2] = 0.4f;
 
-	floor_col[0] = 1.0f;
-	floor_col[1] = 1.0f;
-	floor_col[2] = 1.0f;
+	floor_col[0] = 0.3f;
+	floor_col[1] = 0.5f;
+	floor_col[2] = 0.7f;
 
 	avatar_col[0] = 1.0f;
 	avatar_col[1] = 1.0f;
@@ -95,6 +96,7 @@ void A1::init()
 	col_uni = m_shader.getUniformLocation("colour");
 
 	initGrid();
+	initFloor();
 	initAvatar();
 
 	// Set up initial view and projection matrices (need to do this here,
@@ -128,8 +130,6 @@ void A1::drawCube()
 				float z = float(i);
 				float y = float(block_size);
 
-				// for (int cur_block_sz = 0; cur_block_sz < block_size; cur_block_sz++, y += 1.0f)
-				// {
 				// front
 				verts[cnt++] = vec3(x, 0.0f, z);
 				verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
@@ -183,7 +183,6 @@ void A1::drawCube()
 				verts[cnt++] = vec3(x, 0.0f, z);
 				verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
 				verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
-				// }
 			}
 		}
 	}
@@ -194,6 +193,48 @@ void A1::drawCube()
 	glGenBuffers(1, &cube_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, cube_vbo);
 	glBufferData(GL_ARRAY_BUFFER, 3 * 12 * sz * sizeof(vec3), verts, GL_STATIC_DRAW);
+
+	GLint posAttrib = m_shader.getAttribLocation("position");
+	glEnableVertexAttribArray(posAttrib);
+	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	CHECK_GL_ERRORS;
+}
+
+void A1::initFloor()
+{
+	int sz = DIM * DIM;
+	vec3 verts[3 * 2 * sz];
+
+	int i, j;
+	int cnt = 0;
+
+	for (i = 0; i < DIM; i++)
+	{
+		for (j = 0; j < DIM; j++)
+		{
+			float x = float(j);
+			float z = float(i);
+			// bottom
+			verts[cnt++] = vec3(x, 0.0f, z);
+			verts[cnt++] = vec3(x, 0.0f, z + 1.0f);
+			verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
+
+			verts[cnt++] = vec3(x, 0.0f, z);
+			verts[cnt++] = vec3(x + 1.0f, 0.0f, z);
+			verts[cnt++] = vec3(x + 1.0f, 0.0f, z + 1.0f);
+		}
+	}
+
+	glGenVertexArrays(1, &floor_vao);
+	glBindVertexArray(floor_vao);
+
+	glGenBuffers(1, &floor_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, floor_vbo);
+	glBufferData(GL_ARRAY_BUFFER, 3 * 2 * sz * sizeof(vec3), verts, GL_STATIC_DRAW);
 
 	GLint posAttrib = m_shader.getAttribLocation("position");
 	glEnableVertexAttribArray(posAttrib);
@@ -336,9 +377,9 @@ void A1::reset()
 	block_col[1] = 0.2f;
 	block_col[2] = 0.4f;
 
-	floor_col[0] = 1.0f;
-	floor_col[1] = 1.0f;
-	floor_col[2] = 1.0f;
+	floor_col[0] = 0.3f;
+	floor_col[1] = 0.5f;
+	floor_col[2] = 0.7f;
 
 	avatar_col[0] = 1.0f;
 	avatar_col[1] = 1.0f;
@@ -350,6 +391,7 @@ void A1::reset()
 
 	// rotation
 	m_shape_rotation = 0.0f;
+	insta_rotation_v = 0.0f;
 
 	// scale
 	m_shape_size = 1.0f;
@@ -387,6 +429,7 @@ void A1::digMaze()
 void A1::appLogic()
 {
 	// Place per frame, application logic here ...
+	m_shape_rotation += insta_rotation_v;
 }
 
 //----------------------------------------------------------------------------------------
@@ -510,9 +553,9 @@ void A1::draw()
 	// Create a global transformation for the model (centre it).
 	mat4 W;
 	vec3 z_axis(0.0f, 1.0f, 0.0f);
-	W = glm::translate(W, vec3(-float(DIM) / 2.0f, 0, -float(DIM) / 2.0f));
-	W = glm::rotate(W, m_shape_rotation, z_axis);
 	W = glm::scale(W, vec3(m_shape_size));
+	W = glm::rotate(W, m_shape_rotation, z_axis);
+	W = glm::translate(W, vec3(-float(DIM) / 2.0f, 0, -float(DIM) / 2.0f));
 
 	mat4 center = W;
 
@@ -522,6 +565,11 @@ void A1::draw()
 	glUniformMatrix4fv(P_uni, 1, GL_FALSE, value_ptr(proj));
 	glUniformMatrix4fv(V_uni, 1, GL_FALSE, value_ptr(view));
 	glUniformMatrix4fv(M_uni, 1, GL_FALSE, value_ptr(W));
+
+	// Draw the floor
+	glBindVertexArray(floor_vao);
+	glUniform3f(col_uni, floor_col[0], floor_col[1], floor_col[2]);
+	glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * DIM * DIM);
 
 	// Just draw the grid for now.
 	glBindVertexArray(m_grid_vao);
@@ -599,6 +647,8 @@ bool A1::mouseMoveEvent(double xPos, double yPos)
 		if (m_mouseButtonActive)
 		{
 			m_shape_rotation += (xPos - prev_mouse_x) / m_windowWidth / 2 * 2 * PI;
+			insta_rotation_v = (xPos - prev_mouse_x) / m_windowWidth / 2 * 2 * PI;
+			m_mouseDragging = true;
 			eventHandled = true;
 		}
 		prev_mouse_x = xPos;
@@ -622,6 +672,7 @@ bool A1::mouseButtonInputEvent(int button, int actions, int mods)
 		if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_PRESS)
 		{
 			m_mouseButtonActive = true;
+			m_mouseDragging = false;
 
 			eventHandled = true;
 		}
@@ -629,6 +680,11 @@ bool A1::mouseButtonInputEvent(int button, int actions, int mods)
 
 	if (actions == GLFW_RELEASE)
 	{
+		if (!m_mouseDragging) 
+		{
+			insta_rotation_v = 0.0f;
+		}
+		m_mouseDragging = false;
 		m_mouseButtonActive = false;
 
 		eventHandled = true;
@@ -705,7 +761,6 @@ void A1::removeCube(float x, float z)
 	}
 }
 
-
 //----------------------------------------------------------------------------------------
 /*
  * Event handler.  Handles key input events.
@@ -746,8 +801,9 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.z - 1.0f >= 0.0f)
 			{
-				if (mods == GLFW_MOD_SHIFT) {
-					removeCube(avatar_pos.x, avatar_pos.z-1.0f);
+				if (mods == GLFW_MOD_SHIFT)
+				{
+					removeCube(avatar_pos.x, avatar_pos.z - 1.0f);
 				}
 				if (m.getValue(int(avatar_pos.z - 1.0f), int(avatar_pos.x)) == 0)
 				{
@@ -768,8 +824,9 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.z + 1.0f < float(DIM))
 			{
-				if (mods == GLFW_MOD_SHIFT) {
-					removeCube(avatar_pos.x, avatar_pos.z+1.0f);
+				if (mods == GLFW_MOD_SHIFT)
+				{
+					removeCube(avatar_pos.x, avatar_pos.z + 1.0f);
 				}
 				if (m.getValue(int(avatar_pos.z + 1.0f), int(avatar_pos.x)) == 0)
 				{
@@ -790,8 +847,9 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.x - 1.0f >= 0.0f)
 			{
-				if (mods == GLFW_MOD_SHIFT) {
-					removeCube(avatar_pos.x-1.0f, avatar_pos.z);
+				if (mods == GLFW_MOD_SHIFT)
+				{
+					removeCube(avatar_pos.x - 1.0f, avatar_pos.z);
 				}
 				if (m.getValue(int(avatar_pos.z), int(avatar_pos.x - 1.0f)) == 0)
 				{
@@ -812,8 +870,9 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.x + 1.0f < float(DIM))
 			{
-				if (mods == GLFW_MOD_SHIFT) {
-					removeCube(avatar_pos.x+1.0f, avatar_pos.z);
+				if (mods == GLFW_MOD_SHIFT)
+				{
+					removeCube(avatar_pos.x + 1.0f, avatar_pos.z);
 				}
 				if (m.getValue(int(avatar_pos.z), int(avatar_pos.x + 1.0f)) == 0)
 				{

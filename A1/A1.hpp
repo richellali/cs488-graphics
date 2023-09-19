@@ -32,6 +32,7 @@ protected:
 private:
 	void initGrid();
 	void initAvatar();
+	void initFloor();
 	void drawCube();
 
 	void reset();
@@ -61,7 +62,10 @@ private:
 	Maze m;
 	bool maze_digged;
 
+	// floor
 	float floor_col[3];
+	GLuint floor_vao;
+	GLuint floor_vbo;
 
 	// avator
 	float avatar_col[3];
@@ -80,9 +84,11 @@ private:
 
 	// Rotation
 	bool m_mouseButtonActive;
+	bool m_mouseDragging;
 
 	// Shape rotation angle in radians.
 	float m_shape_rotation;
+	float insta_rotation_v;
 	double prev_mouse_x;
 	glm::vec2 m_mouse_GL_coordinate;
 
