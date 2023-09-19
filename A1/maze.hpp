@@ -19,6 +19,8 @@ public:
 
 	int getBlockNum() const;
 
+	void decreBlockNum();
+
 	std::tuple<float, float> getEntry();
 
 	void digMaze();

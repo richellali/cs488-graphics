@@ -22,16 +22,24 @@ static const float PI = 3.1415926;
 //----------------------------------------------------------------------------------------
 // Constructor
 A1::A1()
-	: current_col(0),	// ui widget
+	: current_col(0), // ui widget
 	  current_widget(0),
 
 	  m(Maze{DIM}),
 	  block_size(1),
 	  avatar_pos(vec3(0.0f)),
+	  maze_digged(false),
 
 	  // rotation
 	  prev_mouse_x(double(0)),
-	  m_mouse_GL_coordinate(vec2(0.0f))
+	  m_shape_rotation(0.0f),
+	  m_mouse_GL_coordinate(vec2(0.0f)),
+
+	  // scale
+	  m_shape_size(1.0f),
+
+	  // keyboard
+	  shift_holding(false)
 {
 	colour[0] = 0.0f;
 	colour[1] = 0.0f;
@@ -69,14 +77,6 @@ void A1::init()
 	// same random numbers
 	cout << "Random number seed = " << rseed << endl;
 
-	// DELETE FROM HERE...
-	m.digMaze();
-	m.printMaze();
-	std::tuple<float, float> entry = m.getEntry();
-	avatar_pos.x = get<1>(entry);
-	avatar_pos.z = get<0>(entry);
-	// ...TO HERE
-
 	// Set the background colour.
 	glClearColor(0.3, 0.5, 0.7, 1.0);
 
@@ -94,7 +94,6 @@ void A1::init()
 	M_uni = m_shader.getUniformLocation("M");
 	col_uni = m_shader.getUniformLocation("colour");
 
-	drawCube();
 	initGrid();
 	initAvatar();
 
@@ -316,6 +315,73 @@ void A1::initAvatar()
 
 //----------------------------------------------------------------------------------------
 /*
+ * GUI function
+ */
+
+void A1::assignColour(float src[3], float dst[3])
+{
+	dst[0] = src[0];
+	dst[1] = src[1];
+	dst[2] = src[2];
+}
+
+void A1::reset()
+{
+	// colours
+	colour[0] = 0.0f;
+	colour[1] = 0.0f;
+	colour[2] = 0.0f;
+
+	block_col[0] = 0.04f;
+	block_col[1] = 0.2f;
+	block_col[2] = 0.4f;
+
+	floor_col[0] = 1.0f;
+	floor_col[1] = 1.0f;
+	floor_col[2] = 1.0f;
+
+	avatar_col[0] = 1.0f;
+	avatar_col[1] = 1.0f;
+	avatar_col[2] = 1.0f;
+
+	// GUI
+	current_widget = 0;
+	current_col = 0;
+
+	// rotation
+	m_shape_rotation = 0.0f;
+
+	// scale
+	m_shape_size = 1.0f;
+
+	// maze
+	block_size = 1;
+	maze_digged = false;
+
+	// avatar
+	avatar_pos = vec3(0.0f);
+}
+
+void A1::digMaze()
+{
+
+	m.digMaze();
+	m.printMaze();
+	std::tuple<float, float> entry = m.getEntry();
+	avatar_pos.x = get<1>(entry);
+	avatar_pos.z = get<0>(entry);
+
+	block_col[0] = 0.04f;
+	block_col[1] = 0.2f;
+	block_col[2] = 0.4f;
+	block_size = 1;
+	drawCube();
+
+	maze_digged = true;
+}
+
+//----------------------------------------------------------------------------------------
+/*
  * Called once per frame, before guiLogic().
  */
 void A1::appLogic()
@@ -324,13 +390,6 @@ void A1::appLogic()
 }
 
 //----------------------------------------------------------------------------------------
-void A1::assignColour(float src[3], float dst[3])
-{
-	dst[0] = src[0];
-	dst[1] = src[1];
-	dst[2] = src[2];
-}
-
 /*
  * Called once per frame, after appLogic(), but before the draw() method.
  */
@@ -348,9 +407,21 @@ void A1::guiLogic()
 	float opacity(0.5f);
 
 	ImGui::Begin("Debug Window", &showDebugWindow, ImVec2(100, 100), opacity, windowFlags);
-	if (ImGui::Button("Quit Application"))
+	if (ImGui::Button("Quit Application(Q)"))
 	{
 		glfwSetWindowShouldClose(m_window, GL_TRUE);
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Reset(R)"))
+	{
+		reset();
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Dig Maze(D)"))
+	{
+		digMaze();
 	}
 
 	// Eventually you'll create multiple colour widgets with
@@ -415,10 +486,10 @@ void A1::guiLogic()
 	// demonstration window right in your application.  Very handy for
 	// browsing around to get the widget you want.  Then look in
 	// shared/imgui/imgui_demo.cpp to see how it's done.
-	if (ImGui::Button("Test Window"))
-	{
-		showTestWindow = !showTestWindow;
-	}
+	// if (ImGui::Button("Test Window"))
+	// {
+	// 	showTestWindow = !showTestWindow;
+	// }
 
 	ImGui::Text("Framerate: %.1f FPS", ImGui::GetIO().Framerate);
 
@@ -438,10 +509,11 @@ void A1::draw()
 {
 	// Create a global transformation for the model (centre it).
 	mat4 W;
-	vec3 z_axis(0.0f,1.0f,0.0f);
+	vec3 z_axis(0.0f, 1.0f, 0.0f);
 	W = glm::translate(W, vec3(-float(DIM) / 2.0f, 0, -float(DIM) / 2.0f));
 	W = glm::rotate(W, m_shape_rotation, z_axis);
-	
+	W = glm::scale(W, vec3(m_shape_size));
+
 	mat4 center = W;
 
 	m_shader.enable();
@@ -458,9 +530,12 @@ void A1::draw()
 
 	// Draw the cubes
 	// Highlight the active square.
-	glBindVertexArray(cube_vao);
-	glUniform3f(col_uni, block_col[0], block_col[1], block_col[2]);
-	glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * m.getBlockNum());
+	if (maze_digged)
+	{
+		glBindVertexArray(cube_vao);
+		glUniform3f(col_uni, block_col[0], block_col[1], block_col[2]);
+		glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * m.getBlockNum());
+	}
 
 	// Draw the Avatar
 	glBindVertexArray(avatar_vao);
@@ -509,10 +584,9 @@ bool A1::mouseMoveEvent(double xPos, double yPos)
 {
 	bool eventHandled(false);
 
-	m_mouse_GL_coordinate = vec2 (
-			(2.0f * xPos) / m_windowWidth - 1.0f,
-			1.0f - ( (2.0f * yPos) / m_windowHeight)
-	);
+	m_mouse_GL_coordinate = vec2(
+		(2.0f * xPos) / m_windowWidth - 1.0f,
+		1.0f - ((2.0f * yPos) / m_windowHeight));
 
 	if (!ImGui::IsMouseHoveringAnyWindow())
 	{
@@ -522,8 +596,10 @@ bool A1::mouseMoveEvent(double xPos, double yPos)
 		// rotation amount, and maybe the previous X position (so
 		// that you can rotate relative to the *change* in X.
 
-		if (m_mouseButtonActive) {
+		if (m_mouseButtonActive)
+		{
 			m_shape_rotation += (xPos - prev_mouse_x) / m_windowWidth / 2 * 2 * PI;
+			eventHandled = true;
 		}
 		prev_mouse_x = xPos;
 	}
@@ -543,13 +619,19 @@ bool A1::mouseButtonInputEvent(int button, int actions, int mods)
 	{
 		// The user clicked in the window.  If it's the left
 		// mouse button, initiate a rotation.
-		if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_PRESS) {
+		if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_PRESS)
+		{
 			m_mouseButtonActive = true;
+
+			eventHandled = true;
 		}
 	}
 
-	if (actions == GLFW_RELEASE) {
+	if (actions == GLFW_RELEASE)
+	{
 		m_mouseButtonActive = false;
+
+		eventHandled = true;
 	}
 
 	return eventHandled;
@@ -564,6 +646,29 @@ bool A1::mouseScrollEvent(double xOffSet, double yOffSet)
 	bool eventHandled(false);
 
 	// Zoom in or out.
+
+	// scroll up -> scale up
+	if (yOffSet < 0)
+	{
+		m_shape_size += 0.5f;
+		if (m_shape_size > 5)
+		{
+			m_shape_size = 5;
+			cout << "Maximum Size Reached..." << endl;
+		}
+		eventHandled = true;
+	}
+	else
+	{
+		// scroll down -> scale down
+		m_shape_size -= 0.5f;
+		if (m_shape_size < 1)
+		{
+			m_shape_size = 1;
+			cout << "Minimum Size Reached..." << endl;
+		}
+		eventHandled = true;
+	}
 
 	return eventHandled;
 }
@@ -580,6 +685,26 @@ bool A1::windowResizeEvent(int width, int height)
 
 	return eventHandled;
 }
+
+//----------------------------------------------------------------------------------------
+/*
+ * Helper to key input events.
+ */
+void A1::removeCube(float x, float z)
+{
+	if (0.0f <= x and x < float(DIM) and 0 <= z and z < float(DIM))
+	{
+
+		if (m.getValue(int(z), int(x)) == 1)
+		{
+			cout << "here" << endl;
+			m.setValue(int(z), int(x), 0);
+			m.decreBlockNum();
+			drawCube();
+		}
+	}
+}
+
 
 //----------------------------------------------------------------------------------------
 /*
@@ -621,6 +746,9 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.z - 1.0f >= 0.0f)
 			{
+				if (mods == GLFW_MOD_SHIFT) {
+					removeCube(avatar_pos.x, avatar_pos.z-1.0f);
+				}
 				if (m.getValue(int(avatar_pos.z - 1.0f), int(avatar_pos.x)) == 0)
 				{
 					avatar_pos.z -= 1.0f;
@@ -640,6 +768,9 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.z + 1.0f < float(DIM))
 			{
+				if (mods == GLFW_MOD_SHIFT) {
+					removeCube(avatar_pos.x, avatar_pos.z+1.0f);
+				}
 				if (m.getValue(int(avatar_pos.z + 1.0f), int(avatar_pos.x)) == 0)
 				{
 					avatar_pos.z += 1.0f;
@@ -659,6 +790,9 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.x - 1.0f >= 0.0f)
 			{
+				if (mods == GLFW_MOD_SHIFT) {
+					removeCube(avatar_pos.x-1.0f, avatar_pos.z);
+				}
 				if (m.getValue(int(avatar_pos.z), int(avatar_pos.x - 1.0f)) == 0)
 				{
 					avatar_pos.x -= 1.0f;
@@ -678,6 +812,9 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 			if (avatar_pos.x + 1.0f < float(DIM))
 			{
+				if (mods == GLFW_MOD_SHIFT) {
+					removeCube(avatar_pos.x+1.0f, avatar_pos.z);
+				}
 				if (m.getValue(int(avatar_pos.z), int(avatar_pos.x + 1.0f)) == 0)
 				{
 					avatar_pos.x += 1.0f;
@@ -688,6 +825,23 @@ bool A1::keyInputEvent(int key, int action, int mods)
 				cout << "Limit reached - cannot move right" << endl;
 			}
 
+			eventHandled = true;
+		}
+
+		// HOT KEY
+		if (key == GLFW_KEY_Q)
+		{
+			glfwSetWindowShouldClose(m_window, GL_TRUE);
+			eventHandled = true;
+		}
+		if (key == GLFW_KEY_R)
+		{
+			reset();
+			eventHandled = true;
+		}
+		if (key == GLFW_KEY_D)
+		{
+			digMaze();
 			eventHandled = true;
 		}
 	}

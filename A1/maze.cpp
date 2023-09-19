@@ -44,6 +44,10 @@ int Maze::getBlockNum() const
 	return block_num;
 }
 
+void Maze::decreBlockNum() {
+	block_num -= 1;
+}
+
 std::tuple<float, float> Maze::getEntry()
 {
 	for (int j = 0; j < m_dim; j++) {

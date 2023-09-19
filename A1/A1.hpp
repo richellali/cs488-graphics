@@ -34,6 +34,10 @@ private:
 	void initAvatar();
 	void drawCube();
 
+	void reset();
+	void digMaze();
+	void removeCube(float x, float z);
+
 	void assignColour(float src[3], float dst[3]);
 
 	// Fields related to the shader and uniforms.
@@ -53,7 +57,10 @@ private:
 	GLuint cube_vao;
 	GLuint cube_vbo;
 
+	// maze
 	Maze m;
+	bool maze_digged;
+
 	float floor_col[3];
 
 	// avator
@@ -73,8 +80,15 @@ private:
 
 	// Rotation
 	bool m_mouseButtonActive;
+
 	// Shape rotation angle in radians.
 	float m_shape_rotation;
 	double prev_mouse_x;
 	glm::vec2 m_mouse_GL_coordinate;
+
+	// Scale
+	float m_shape_size;
+
+	// key input
+	bool shift_holding;
 };
