@@ -34,7 +34,7 @@ private:
 	void initAvatar();
 	void drawCube();
 
-	void assignColour(float (&src)[], float (&dst)[]);
+	void assignColour(float src[3], float dst[3]);
 
 	// Fields related to the shader and uniforms.
 	ShaderProgram m_shader;
@@ -70,4 +70,11 @@ private:
 
 	int current_col;
 	int current_widget;
+
+	// Rotation
+	bool m_mouseButtonActive;
+	// Shape rotation angle in radians.
+	float m_shape_rotation;
+	double prev_mouse_x;
+	glm::vec2 m_mouse_GL_coordinate;
 };

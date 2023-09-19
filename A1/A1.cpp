@@ -22,11 +22,16 @@ static const float PI = 3.1415926;
 //----------------------------------------------------------------------------------------
 // Constructor
 A1::A1()
-	: current_col(0),
+	: current_col(0),	// ui widget
 	  current_widget(0),
+
 	  m(Maze{DIM}),
 	  block_size(1),
-	  avatar_pos(vec3(0.0f))
+	  avatar_pos(vec3(0.0f)),
+
+	  // rotation
+	  prev_mouse_x(double(0)),
+	  m_mouse_GL_coordinate(vec2(0.0f))
 {
 	colour[0] = 0.0f;
 	colour[1] = 0.0f;
@@ -319,7 +324,7 @@ void A1::appLogic()
 }
 
 //----------------------------------------------------------------------------------------
-void A1::assignColour(float (&src)[], float (&dst)[])
+void A1::assignColour(float src[3], float dst[3])
 {
 	dst[0] = src[0];
 	dst[1] = src[1];
@@ -379,7 +384,6 @@ void A1::guiLogic()
 	default:
 		cout << "No Radio Button is Selected." << endl;
 	}
-	cout << "selected obj: " << current_widget << endl;
 
 	// Set colour to the current widget
 	ImGui::PushID(0);
@@ -434,7 +438,9 @@ void A1::draw()
 {
 	// Create a global transformation for the model (centre it).
 	mat4 W;
+	vec3 z_axis(0.0f,1.0f,0.0f);
 	W = glm::translate(W, vec3(-float(DIM) / 2.0f, 0, -float(DIM) / 2.0f));
+	W = glm::rotate(W, m_shape_rotation, z_axis);
 	
 	mat4 center = W;
 
@@ -503,6 +509,11 @@ bool A1::mouseMoveEvent(double xPos, double yPos)
 {
 	bool eventHandled(false);
 
+	m_mouse_GL_coordinate = vec2 (
+			(2.0f * xPos) / m_windowWidth - 1.0f,
+			1.0f - ( (2.0f * yPos) / m_windowHeight)
+	);
+
 	if (!ImGui::IsMouseHoveringAnyWindow())
 	{
 		// Put some code here to handle rotations.  Probably need to
@@ -510,6 +521,11 @@ bool A1::mouseMoveEvent(double xPos, double yPos)
 		// Probably need some instance variables to track the current
 		// rotation amount, and maybe the previous X position (so
 		// that you can rotate relative to the *change* in X.
+
+		if (m_mouseButtonActive) {
+			m_shape_rotation += (xPos - prev_mouse_x) / m_windowWidth / 2 * 2 * PI;
+		}
+		prev_mouse_x = xPos;
 	}
 
 	return eventHandled;
@@ -527,6 +543,13 @@ bool A1::mouseButtonInputEvent(int button, int actions, int mods)
 	{
 		// The user clicked in the window.  If it's the left
 		// mouse button, initiate a rotation.
+		if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_PRESS) {
+			m_mouseButtonActive = true;
+		}
+	}
+
+	if (actions == GLFW_RELEASE) {
+		m_mouseButtonActive = false;
 	}
 
 	return eventHandled;
