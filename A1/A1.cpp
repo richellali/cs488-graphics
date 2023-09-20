@@ -753,7 +753,6 @@ void A1::removeCube(float x, float z)
 
 		if (m.getValue(int(z), int(x)) == 1)
 		{
-			cout << "here" << endl;
 			m.setValue(int(z), int(x), 0);
 			m.decreBlockNum();
 			drawCube();

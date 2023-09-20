@@ -1,0 +1,8 @@
+Compilation:
+
+Manual:
+- Scale: min -> 1; max -> 5; change by 0.5 each time
+- Grow/Shrink Walls: min -> 1; NO maximum;
+- left key rotation
+- maze exactly like the one it prints
+- colour will not be changed when digging a new maze, but block size will be reset
