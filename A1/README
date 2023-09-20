@@ -1,8 +1,12 @@
 Compilation:
+- premake4 gmake
+- make
+- ./A1
 
 Manual:
-- Scale: min -> 1; max -> 5; change by 0.5 each time
+- Scale: Min = 1; Max = 5; change by 0.5 each time
+        -> scroll up => scale up; scroll down => scale down
+- Block Size: min = 1; No maximum
 - Grow/Shrink Walls: min -> 1; NO maximum;
-- left key rotation
-- maze exactly like the one it prints
-- colour will not be changed when digging a new maze, but block size will be reset
+- Rotation only occurs when pressing with left mouse key and mouse moves in x axis
+- Colours and Block size will not be changed when digging a new maze

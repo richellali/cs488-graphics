@@ -413,10 +413,6 @@ void A1::digMaze()
 	avatar_pos.x = get<1>(entry);
 	avatar_pos.z = get<0>(entry);
 
-	block_col[0] = 0.04f;
-	block_col[1] = 0.2f;
-	block_col[2] = 0.4f;
-	block_size = 1;
 	drawCube();
 
 	maze_digged = true;
@@ -500,14 +496,7 @@ void A1::guiLogic()
 	}
 
 	// Set colour to the current widget
-	ImGui::PushID(0);
 	ImGui::ColorEdit3("##Colour", colour);
-	ImGui::SameLine();
-	if (ImGui::RadioButton("##Col", &current_col, 1))
-	{
-		// Select this colour.
-	}
-	ImGui::PopID();
 
 	// Set colour in the selector to avatar, block floor
 	switch (current_widget)
@@ -677,14 +666,17 @@ bool A1::mouseButtonInputEvent(int button, int actions, int mods)
 			eventHandled = true;
 		}
 	}
-
-	if (actions == GLFW_RELEASE)
+	if (actions == GLFW_RELEASE && m_mouseButtonActive)
 	{
-		if (!m_mouseDragging) 
+		if (!m_mouseDragging)
 		{
 			insta_rotation_v = 0.0f;
 		}
-		m_mouseDragging = false;
+		else
+		{
+			m_mouseDragging = false;
+		}
+
 		m_mouseButtonActive = false;
 
 		eventHandled = true;
@@ -704,7 +696,7 @@ bool A1::mouseScrollEvent(double xOffSet, double yOffSet)
 	// Zoom in or out.
 
 	// scroll up -> scale up
-	if (yOffSet < 0)
+	if (yOffSet > 0)
 	{
 		m_shape_size += 0.5f;
 		if (m_shape_size > 5)
