@@ -99,13 +99,13 @@ void Maze::printMaze() {
 	for (i=0; i<m_dim; i++) {
 		for (j=0; j<m_dim; j++) { 
 			if ( getValue(i,j)==1 ) {
-				printf("X");
+				// printf("X");
 				block_num += 1;
 			} else {
-				printf(" ");
+				// printf(" ");
 			}
 		}
-		printf("\n");
+		// printf("\n");
 	}
 }
 

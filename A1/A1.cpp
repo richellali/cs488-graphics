@@ -76,7 +76,8 @@ void A1::init()
 	srandom(rseed);
 	// Print random number seed in case we want to rerun with
 	// same random numbers
-	cout << "Random number seed = " << rseed << endl;
+
+	// cout << "Random number seed = " << rseed << endl;
 
 	// Set the background colour.
 	glClearColor(0.3, 0.5, 0.7, 1.0);
@@ -492,7 +493,8 @@ void A1::guiLogic()
 		assignColour(avatar_col, colour);
 		break;
 	default:
-		cout << "No Radio Button is Selected." << endl;
+		// cout << "No Radio Button is Selected." << endl;
+		break;
 	}
 
 	// Set colour to the current widget
@@ -511,7 +513,8 @@ void A1::guiLogic()
 		assignColour(colour, avatar_col);
 		break;
 	default:
-		cout << "No Radio Button is Selected." << endl;
+		// cout << "No Radio Button is Selected." << endl;
+		break;
 	}
 
 	// For convenience, you can uncomment this to show ImGui's massive
@@ -702,7 +705,7 @@ bool A1::mouseScrollEvent(double xOffSet, double yOffSet)
 		if (m_shape_size > 5)
 		{
 			m_shape_size = 5;
-			cout << "Maximum Size Reached..." << endl;
+			// cout << "Maximum Size Reached..." << endl;
 		}
 		eventHandled = true;
 	}
@@ -713,7 +716,7 @@ bool A1::mouseScrollEvent(double xOffSet, double yOffSet)
 		if (m_shape_size < 1)
 		{
 			m_shape_size = 1;
-			cout << "Minimum Size Reached..." << endl;
+			// cout << "Minimum Size Reached..." << endl;
 		}
 		eventHandled = true;
 	}
@@ -766,7 +769,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 		// Respond to some key events.
 		if (key == GLFW_KEY_SPACE)
 		{
-			cout << "space key pressed - growing walls..." << endl;
+			// cout << "space key pressed - growing walls..." << endl;
 
 			block_size += 1;
 			drawCube();
@@ -776,7 +779,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 		if (key == GLFW_KEY_BACKSPACE)
 		{
-			cout << "backspace key pressed - shrinking walls..." << endl;
+			// cout << "backspace key pressed - shrinking walls..." << endl;
 
 			block_size -= 1;
 
@@ -788,7 +791,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 		if (key == GLFW_KEY_UP)
 		{
-			cout << "Up key pressed - going up..." << endl;
+			// cout << "Up key pressed - going up..." << endl;
 
 			if (avatar_pos.z - 1.0f >= 0.0f)
 			{
@@ -803,7 +806,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 			}
 			else
 			{
-				cout << "Limit reached - cannot move up" << endl;
+				// cout << "Limit reached - cannot move up" << endl;
 			}
 
 			eventHandled = true;
@@ -811,7 +814,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 		if (key == GLFW_KEY_DOWN)
 		{
-			cout << "Down key pressed - going down..." << endl;
+			// cout << "Down key pressed - going down..." << endl;
 
 			if (avatar_pos.z + 1.0f < float(DIM))
 			{
@@ -826,7 +829,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 			}
 			else
 			{
-				cout << "Limit reached - cannot move down" << endl;
+				// cout << "Limit reached - cannot move down" << endl;
 			}
 
 			eventHandled = true;
@@ -834,7 +837,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 		if (key == GLFW_KEY_LEFT)
 		{
-			cout << "Left key pressed - going left..." << endl;
+			// cout << "Left key pressed - going left..." << endl;
 
 			if (avatar_pos.x - 1.0f >= 0.0f)
 			{
@@ -849,7 +852,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 			}
 			else
 			{
-				cout << "Limit reached - cannot move left" << endl;
+				// cout << "Limit reached - cannot move left" << endl;
 			}
 
 			eventHandled = true;
@@ -857,7 +860,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 
 		if (key == GLFW_KEY_RIGHT)
 		{
-			cout << "right key pressed - going right..." << endl;
+			// cout << "right key pressed - going right..." << endl;
 
 			if (avatar_pos.x + 1.0f < float(DIM))
 			{
@@ -872,7 +875,7 @@ bool A1::keyInputEvent(int key, int action, int mods)
 			}
 			else
 			{
-				cout << "Limit reached - cannot move right" << endl;
+				// cout << "Limit reached - cannot move right" << endl;
 			}
 
 			eventHandled = true;
