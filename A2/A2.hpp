@@ -53,6 +53,14 @@ protected:
 	void mapVboDataToVertexAttributeLocation();
 	void uploadVertexDataToVbos();
 
+	// UI
+	int current_widget;
+
+	// cubes
+	glm::vec4 cube_verts[24];
+	int vert_num;
+	void initCube();
+
 	void initLineData();
 
 	void setLineColour(const glm::vec3 & colour);
@@ -71,5 +79,22 @@ protected:
 	VertexData m_vertexData;
 
 	glm::vec3 m_currentLineColour;
+
+	// matrix 
+	// model
+	glm::mat4 m_translate;
+	glm::mat4 m_rotate;
+	glm::mat4 m_scale;
+
+	// view
+	glm::mat4 model_to_view;
+	glm::mat4 v_translate;
+	glm::mat4 v_rotate;
+
+	// projection
+	glm::mat4 proj;
+
+	glm::vec4 point_transformation(glm::vec4 &point);
+	glm::mat4 createView();
 
 };
