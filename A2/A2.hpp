@@ -8,11 +8,33 @@
 
 #include <glm/glm.hpp>
 
+
 #include <vector>
 
 // Set a global maximum number of vertices in order to pre-allocate VBO data
 // in one shot, rather than reallocating each frame.
 const GLsizei kMaxVertices = 1000;
+enum MODE {
+	ROTATE_VIEW = 0,
+	TRANSLATE_VIEW = 1,
+	PERSPECTIVE = 2,
+	ROTATE_MODEL = 3,
+	TRANSLATE_MODEL = 4,
+	SCALE_MODEL = 5,
+	VIEWPORT = 6,
+};
+
+enum TRANS {
+	MODEL = 0,
+	MODEL_FRAME = 1,
+	VIEW_FRAME = 2,
+};
+
+struct Axis{
+		bool x;
+		bool y;
+		bool z;
+	};
 
 
 // Convenience class for storing vertex data in CPU memory.
@@ -58,8 +80,18 @@ protected:
 
 	// cubes
 	glm::vec4 cube_verts[24];
-	int vert_num;
+	int cube_num;
 	void initCube();
+
+	// coordinates
+	glm:: vec4 coord_verts[6];
+	int coord_num;
+	void initCoord();
+
+	// mouse
+	Axis axis;
+	bool m_mouseButtonActive;
+	double prev_mouse_x;
 
 	void initLineData();
 
@@ -94,7 +126,15 @@ protected:
 	// projection
 	glm::mat4 proj;
 
-	glm::vec4 point_transformation(glm::vec4 &point);
+	// transformation func
 	glm::mat4 createView();
+	glm::vec4 point_transformation(glm::vec4 &point, TRANS trans);
+
+	void rotate_view(double x_mov);
+	void translate_view(double x_mov);
+	void rotate_model(double x_mov);
+	void translate_model(double x_mov);
+	void scale_model(double x_mov);
+	
 
 };

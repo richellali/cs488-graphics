@@ -27,17 +27,24 @@ VertexData::VertexData()
 // Constructor
 A2::A2()
 	: m_currentLineColour(vec3(0.0f)),
-	  vert_num(24),
+	  cube_num(24),
+	  coord_num(6),
 
 	  // UI
 	  current_widget(0),
+
+	  axis{false, false, false},
+
+	  // mouse
+	  m_mouseButtonActive(false),
+	  prev_mouse_x(0.0f),
 
 	  // matrix
 	  m_translate(mat4(1.0f)),
 	  m_rotate(mat4(1.0f)),
 	  m_scale(mat4(1.0f)),
 	  v_translate(mat4(1.0f)),
-	  v_rotate(mat4(1.0f)),
+	  v_rotate(mat4(1.0f))
 {
 }
 
@@ -67,57 +74,76 @@ void A2::init()
 	mapVboDataToVertexAttributeLocation();
 
 	initCube();
+	initCoord();
 	model_to_view = createView();
 }
 
-//
+//----------------------------------------------------------------------------------------
+/*
+	initialization
+*/
+
+void A2::initCoord()
+{
+	int cnt = 0;
+	// x
+	coord_verts[cnt++] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	coord_verts[cnt++] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	// y
+	coord_verts[cnt++] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	coord_verts[cnt++] = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+
+	// z
+	coord_verts[cnt++] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	coord_verts[cnt++] = vec4(0.0f, 0.0f, 1.0f, 1.0f);
+}
+
 void A2::initCube()
 {
 	int cnt = 0;
 	// back 4 lines
 	// down
-	cube_verts[cnt++] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	cube_verts[cnt++] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, -1.0f, -1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(1.0f, -1.0f, -1.0f, 1.0f);
 	// right
-	cube_verts[cnt++] = vec4(1.0f, 1.0f, 0.0f, 1.0f);
-	cube_verts[cnt++] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	cube_verts[cnt++] = vec4(1.0f, 1.0f, -1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(1.0f, -1.0f, -1.0f, 1.0f);
 	// left
-	cube_verts[cnt++] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	cube_verts[cnt++] = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, -1.0f, -1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, 1.0f, -1.0f, 1.0f);
 	// up
-	cube_verts[cnt++] = vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	cube_verts[cnt++] = vec4(1.0f, 1.0f, 0.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, 1.0f, -1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(1.0f, 1.0f, -1.0f, 1.0f);
 
 	// front 4 lines
 	// down
-	cube_verts[cnt++] = vec4(0.0f, 0.0f, 1.0f, 1.0f);
-	cube_verts[cnt++] = vec4(1.0f, 0.0f, 1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, -1.0f, 1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(1.0f, -1.0f, 1.0f, 1.0f);
 	// right
 	cube_verts[cnt++] = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	cube_verts[cnt++] = vec4(1.0f, 0.0f, 1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(1.0f, -1.0f, 1.0f, 1.0f);
 	// left
-	cube_verts[cnt++] = vec4(0.0f, 0.0f, 1.0f, 1.0f);
-	cube_verts[cnt++] = vec4(0.0f, 1.0f, 1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, -1.0f, 1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, 1.0f, 1.0f, 1.0f);
 	// up
-	cube_verts[cnt++] = vec4(0.0f, 1.0f, 1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, 1.0f, 1.0f, 1.0f);
 	cube_verts[cnt++] = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	// left 2 lines
 	// down
-	cube_verts[cnt++] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	cube_verts[cnt++] = vec4(0.0f, 0.0f, 1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, -1.0f, -1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, -1.0f, 1.0f, 1.0f);
 	// up
-	cube_verts[cnt++] = vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	cube_verts[cnt++] = vec4(0.0f, 1.0f, 1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, 1.0f, -1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(-1.0f, 1.0f, 1.0f, 1.0f);
 	// right 2 lines
 	// down
-	cube_verts[cnt++] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
-	cube_verts[cnt++] = vec4(1.0f, 0.0f, 1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(1.0f, -1.0f, -1.0f, 1.0f);
+	cube_verts[cnt++] = vec4(1.0f, -1.0f, 1.0f, 1.0f);
 	// up
-	cube_verts[cnt++] = vec4(1.0f, 1.0f, 0.0f, 1.0f);
+	cube_verts[cnt++] = vec4(1.0f, 1.0f, -1.0f, 1.0f);
 	cube_verts[cnt++] = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-	// cout << cube_verts << endl;
 }
 
 //----------------------------------------------------------------------------------------
@@ -240,10 +266,156 @@ void A2::drawLine(
 	m_vertexData.numVertices += 2;
 }
 
+//---------------------------------------------------------------------------------------
+/*
+	TRANSFORMATION - MODEL
+*/ 
+
+void A2::rotate_model(double x_mov) {
+	float theta = x_mov * 0.01f;
+	
+	if (axis.x) {
+		mat4 rotate(1.0f);
+
+		rotate[1].y = cos(theta);
+		rotate[1].z = sin(theta);
+		rotate[2].y = -sin(theta);
+		rotate[2].z = cos(theta);
+
+		m_rotate *= rotate;
+	}
+
+	if (axis.y) {
+		mat4 rotate(1.0f);
+
+		rotate[0].x = cos(theta);
+		rotate[0].z = -sin(theta);
+		rotate[2].x = sin(theta);
+		rotate[2].z = cos(theta);
+
+		m_rotate *= rotate;
+	}
+
+	if (axis.z) {
+		mat4 rotate(1.0f);
+
+		rotate[0].x = cos(theta);
+		rotate[0].y = sin(theta);
+		rotate[1].x = -sin(theta);
+		rotate[1].y = cos(theta);
+
+		m_rotate *= rotate;
+	}
+
+
+}
+
+void A2::translate_model(double x_mov) {
+	double factor = 0.05f;
+	mat4 translate(1.0f);
+
+	if (axis.x) {
+		translate[3].x = x_mov * factor;
+	}
+
+	if (axis.y) {
+		translate[3].y = x_mov * factor;
+	}
+
+	if (axis.z) {
+		translate[3].z = x_mov * factor;
+	}
+
+	m_translate *= translate;
+}
+
+void A2::scale_model(double x_mov) {
+	double factor = 0.05f;
+	mat4 translate(1.0f);
+
+	double min_scale;
+	1.0f + x_mov * factor > 0 ? min_scale = 1.0f + x_mov * factor : min_scale = 1.0f;
+
+	if (axis.x) {
+		translate[0].x *= min_scale;
+	}
+
+	if (axis.y) {
+		translate[1].y = min_scale;
+	}
+
+	if (axis.z) {
+		translate[2].z = min_scale;
+	}
+
+	m_translate *= translate;
+}
+
+/*
+	TRANSFORMATION - VIEW
+*/
+
+void A2::rotate_view(double x_mov) {
+	float theta = x_mov * 0.01f;
+	
+	if (axis.x) {
+		mat4 rotate(1.0f);
+
+		rotate[1].y = cos(theta);
+		rotate[1].z = sin(theta);
+		rotate[2].y = -sin(theta);
+		rotate[2].z = cos(theta);
+
+		v_rotate *= inverse(rotate);
+	}
+
+	if (axis.y) {
+		mat4 rotate(1.0f);
+
+		rotate[0].x = cos(theta);
+		rotate[0].z = -sin(theta);
+		rotate[2].x = sin(theta);
+		rotate[2].z = cos(theta);
+
+		v_rotate *= inverse(rotate);
+	}
+
+	if (axis.z) {
+		mat4 rotate(1.0f);
+
+		rotate[0].x = cos(theta);
+		rotate[0].y = sin(theta);
+		rotate[1].x = -sin(theta);
+		rotate[1].y = cos(theta);
+
+		v_rotate *= inverse(rotate);
+	}
+}
+
+void A2::translate_view(double x_mov) {
+	float factor = 0.05f;
+	mat4 translate(1.0f);
+
+	if (axis.x) {
+		translate[3].x = x_mov * factor;
+	}
+
+	if (axis.y) {
+		translate[3].y = x_mov * factor;
+	}
+
+	if (axis.z) {
+		translate[3].z = x_mov * factor;
+	}
+
+	m_translate *= inverse(translate);
+}
+
+// TODO: modify this
 glm::mat4 A2::createView()
 {
 	glm::vec3 lookat(0.0f, 0.0f, -1.0f);
-	glm::vec3 lookfrom(0.0f, 0.0f, 5.0f);
+	glm::vec3 lookfrom(0.0f, 0.0f, 10.0f);
 	glm::vec3 up(lookfrom.x, lookfrom.y + 1.0f, lookfrom.z);
 
 	glm::vec3 z((lookat - lookfrom) / glm::distance(lookat, lookfrom));
@@ -263,9 +435,17 @@ glm::mat4 A2::createView()
 }
 
 //----------------------------------------------------------------------------------------
-vec4 A2::point_transformation(vec4 &point)
+vec4 A2::point_transformation(vec4 &point, TRANS trans)
 {
-	vec4 new_pt = v_rotate * v_translate * model_to_view * m_scale * m_rotate * m_translate * point;
+	vec4 new_pt;
+	if (trans == TRANS::MODEL) {
+		new_pt = v_rotate * v_translate * model_to_view * m_translate * m_rotate * m_scale * point;
+	} else if (trans == TRANS::MODEL_FRAME) {
+		new_pt = v_rotate * v_translate * model_to_view * m_translate * m_rotate * m_scale * point;
+	} else {
+		new_pt = v_rotate * v_translate * model_to_view * point;
+	}
+	
 	new_pt /= new_pt.z;
 	return new_pt;
 }
@@ -279,14 +459,32 @@ void A2::appLogic()
 	// Call at the beginning of frame, before drawing lines:
 	initLineData();
 
-	for (int i = 0; i < vert_num; i += 2)
+	for (int i = 0; i < cube_num; i += 2)
 	{
-		setLineColour(vec3(1.0f, 0.0f, 0.0f));
-		vec4 p_a = point_transformation(cube_verts[i]);
-		vec4 p_b = point_transformation(cube_verts[i + 1]);
+		setLineColour(vec3(0.0f, 0.0f, 0.0f));
+		vec4 p_a = point_transformation(cube_verts[i], TRANS::MODEL);
+		vec4 p_b = point_transformation(cube_verts[i + 1], TRANS::MODEL);
 		drawLine(vec2(p_a.x, p_a.y), vec2(p_b.x, p_b.y));
 	}
 
+
+	// Model frame
+	for (int i = 0; i < coord_num; i += 2)
+	{
+		setLineColour(vec3(1.0f, 0.7f, 0.8f));
+		vec4 p_a = point_transformation(coord_verts[i], TRANS::MODEL_FRAME);
+		vec4 p_b = point_transformation(coord_verts[i + 1], TRANS::MODEL_FRAME);
+		drawLine(vec2(p_a.x, p_a.y), vec2(p_b.x, p_b.y));
+	}
+
+	// View frame
+	for (int i = 0; i < coord_num; i += 2)
+	{
+		setLineColour(vec3(0.2f, 1.0f, 1.0f));
+		vec4 p_a = point_transformation(coord_verts[i], TRANS::VIEW_FRAME);
+		vec4 p_b = point_transformation(coord_verts[i + 1], TRANS::VIEW_FRAME);
+		drawLine(vec2(p_a.x, p_a.y), vec2(p_b.x, p_b.y));
+	}
 	// // Draw outer square:
 	// setLineColour(vec3(1.0f, 0.7f, 0.8f));
 	// drawLine(vec2(-0.5f, -0.5f), vec2(0.5f, -0.5f));
@@ -323,16 +521,21 @@ void A2::guiLogic()
 				 windowFlags);
 
 	ImGui::PushID(1);
-	ImGui::RadioButton("Rotate View (O)", &current_widget, 0);
-	ImGui::RadioButton("Translate View (E)", &current_widget, 1);
-	ImGui::RadioButton("Perspective (P)", &current_widget, 2);
-	ImGui::RadioButton("Rotate Model (R)", &current_widget, 3);
-	ImGui::RadioButton("Translate Model (T)", &current_widget, 4);
-	ImGui::RadioButton("Scale Model (S)", &current_widget, 5);
-	ImGui::RadioButton("Viewport (V)", &current_widget, 6);
+	ImGui::RadioButton("Rotate View (O)", &current_widget, MODE::ROTATE_VIEW);
+	ImGui::RadioButton("Translate View (E)", &current_widget, MODE::TRANSLATE_VIEW);
+	ImGui::RadioButton("Perspective (P)", &current_widget, MODE::PERSPECTIVE);
+	ImGui::RadioButton("Rotate Model (R)", &current_widget, MODE::ROTATE_MODEL);
+	ImGui::RadioButton("Translate Model (T)", &current_widget, MODE::TRANSLATE_MODEL);
+	ImGui::RadioButton("Scale Model (S)", &current_widget, MODE::SCALE_MODEL);
+	ImGui::RadioButton("Viewport (V)", &current_widget, MODE::VIEWPORT);
 	ImGui::PopID();
 
 	// Create Button, and check if it was clicked:
+	if (ImGui::Button("Reset (A)"))
+	{
+		
+	}
+
 	if (ImGui::Button("Quit Application"))
 	{
 		glfwSetWindowShouldClose(m_window, GL_TRUE);
@@ -420,7 +623,43 @@ bool A2::mouseMoveEvent(
 {
 	bool eventHandled(false);
 
-	// Fill in with event handling code...
+	if (!ImGui::IsMouseHoveringAnyWindow())
+	{
+		// Put some code here to handle rotations.  Probably need to
+		// check whether we're *dragging*, not just moving the mouse.
+		// Probably need some instance variables to track the current
+		// rotation amount, and maybe the previous X position (so
+		// that you can rotate relative to the *change* in X.
+
+		if (m_mouseButtonActive) {
+			double move_distance = xPos - prev_mouse_x;
+			switch(current_widget) {
+				case MODE::ROTATE_VIEW:
+					rotate_view(move_distance);
+					break;
+				case MODE::TRANSLATE_VIEW:
+					translate_view(move_distance);
+					break;
+				case MODE::PERSPECTIVE:
+					break;
+				case MODE::ROTATE_MODEL:
+					rotate_model(move_distance);
+					break;
+				case MODE::TRANSLATE_MODEL:
+					translate_model(move_distance);
+					break;
+				case MODE::SCALE_MODEL:
+					scale_model(move_distance);
+					break;
+				case MODE::VIEWPORT:
+					break;
+				default:
+					break;
+			}
+		}
+		prev_mouse_x = xPos;
+		eventHandled = true;
+	}
 
 	return eventHandled;
 }
@@ -436,7 +675,58 @@ bool A2::mouseButtonInputEvent(
 {
 	bool eventHandled(false);
 
-	// Fill in with event handling code...
+	if (!ImGui::IsMouseHoveringAnyWindow())
+	{
+		// The user clicked in the window.  If it's the left
+		// mouse button, initiate a rotation.
+		if (actions == GLFW_PRESS // && (
+		// 	button == GLFW_MOUSE_BUTTON_LEFT ||
+		// 	button == GLFW_MOUSE_BUTTON_MIDDLE ||
+		// 	button == GLFW_MOUSE_BUTTON_RIGHT )
+		)
+		{
+			// switch (button) {
+			// 	case GLFW_MOUSE_BUTTON_LEFT:
+			// 		axis = AXIS::X;
+			// 		break;
+			// 	case GLFW_MOUSE_BUTTON_MIDDLE:
+			// 		axis = AXIS::Y;
+			// 		break;
+			// 	case GLFW_MOUSE_BUTTON_RIGHT:
+			// 		axis = AXIS::Z;
+			// 		break;
+			// 	default:
+			// 		break;
+			// }
+			if (button == GLFW_MOUSE_BUTTON_LEFT) {
+				axis.x = true;
+			}
+			if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+				axis.y = true;
+			}
+			if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+				axis.z = true;
+			}
+			m_mouseButtonActive = true;
+			eventHandled = true;
+		}
+	}
+
+	if (actions == GLFW_RELEASE)
+	{
+		if (button == GLFW_MOUSE_BUTTON_LEFT) {
+				axis.x = false;
+			}
+			if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+				axis.y = false;
+			}
+			if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+				axis.z = false;
+			}
+		m_mouseButtonActive = false;
+		eventHandled = true;
+	}
+
 
 	return eventHandled;
 }
@@ -485,32 +775,38 @@ bool A2::keyInputEvent(
 	if (action == GLFW_PRESS) {
 		switch(key) {
 			case GLFW_KEY_O:
-				current_widget = 0;
+				current_widget = MODE::ROTATE_VIEW;
 				eventHandled = true;
 				break;
 			case GLFW_KEY_E:
-				current_widget = 1;
+				current_widget = MODE::TRANSLATE_VIEW;
 				eventHandled = true;
 				break;
 			case GLFW_KEY_P:
-				current_widget = 2;
+				current_widget = MODE::PERSPECTIVE;
 				eventHandled = true;
 				break;
 			case GLFW_KEY_R:
-				current_widget = 3;
+				current_widget = MODE::ROTATE_MODEL;
 				eventHandled = true;
 				break;
 			case GLFW_KEY_T:
-				current_widget = 4;
+				current_widget = MODE::TRANSLATE_MODEL;
 				eventHandled = true;
 				break;
 			case GLFW_KEY_S:
-				current_widget = 5;
+				current_widget = MODE::SCALE_MODEL;
 				eventHandled = true;
 				break;
 			case GLFW_KEY_V:
-				current_widget = 6;
+				current_widget = MODE::VIEWPORT;
 				eventHandled = true;
+				break;
+			case GLFW_KEY_A:
+			// TODO:: fill in for reset
+				break;
+			case GLFW_KEY_Q:
+				glfwSetWindowShouldClose(m_window, GL_TRUE);
 				break;
 			default:
 				break;
