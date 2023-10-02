@@ -27,7 +27,7 @@ enum MODE {
 enum TRANS {
 	MODEL = 0,
 	MODEL_FRAME = 1,
-	VIEW_FRAME = 2,
+	WORLD_FRAME = 2,
 };
 
 struct Axis{
@@ -84,9 +84,25 @@ protected:
 	void initCube();
 
 	// coordinates
-	glm:: vec4 coord_verts[6];
+	glm::vec4 w_coord_verts[6];
+	glm::vec4 m_coord_verts[6];
 	int coord_num;
-	void initCoord();
+	void initWorldCoord();
+	void initModelCoord();
+
+	// viewport
+	bool viewport_activated;
+	// float init_view_lb_x;
+	// float init_view_lb_y;
+	// float final_view_rt_x;
+ 	// float final_view_rt_y;
+
+	float vp_x1;
+	float vp_y1;
+	float vp_x2;
+ 	float vp_y2;
+
+	void initViewport();
 
 	// mouse
 	Axis axis;
@@ -114,20 +130,28 @@ protected:
 
 	// matrix 
 	// model
-	glm::mat4 m_translate;
-	glm::mat4 m_rotate;
-	glm::mat4 m_scale;
+	glm::mat4 m_transform;
+	// glm::mat4 m_rotate;
+	glm::mat4 norm_transform;
 
 	// view
 	glm::mat4 model_to_view;
-	glm::mat4 v_translate;
-	glm::mat4 v_rotate;
+	glm::mat4 v_transform;
+	// glm::mat4 v_rotate;
 
 	// projection
+	float fov;
+	float near;
+	float far;
 	glm::mat4 proj;
+	void initProj();
+	void change_fov(double x_mov);
+
+	bool clip_helper(glm::vec4 &A, glm::vec4 &B, float wecA, float wecB);
+	bool clip(glm::vec4 &A, glm::vec4 &B);
 
 	// transformation func
-	glm::mat4 createView();
+	void initView();
 	glm::vec4 point_transformation(glm::vec4 &point, TRANS trans);
 
 	void rotate_view(double x_mov);
