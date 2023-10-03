@@ -8,4 +8,6 @@ INSTRUCTION:
   Resizing window will make viewport behave unusual.
 - Changing viewport only appears when user drags a window. Clicking might result in disappearing or weird behaviour of the viewport.
   Please only drag to create new viewport.
+- Near plane is at 1.0
+- Far plane is at 50.0
 
