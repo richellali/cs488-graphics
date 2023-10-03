@@ -684,7 +684,7 @@ void A2::appLogic()
 
 	for (int i = 0; i < cube_num; i += 2)
 	{
-		setLineColour(vec3(0.0f, 0.0f, 0.0f));
+		setLineColour(vec3(0.7f, 1.0f, 0.7f));
 		vec4 p_a = point_transformation(cube_verts[i], TRANS::MODEL);
 		vec4 p_b = point_transformation(cube_verts[i + 1], TRANS::MODEL);
 
@@ -716,7 +716,7 @@ void A2::appLogic()
 	// World frame
 	for (int i = 0; i < coord_num; i += 2)
 	{
-		setLineColour(vec3(0.2f, 1.0f, 1.0f));
+		setLineColour(vec3(0.0f, 0.1f, 1.0f));
 		vec4 p_a = point_transformation(w_coord_verts[i], TRANS::WORLD_FRAME);
 		vec4 p_b = point_transformation(w_coord_verts[i + 1], TRANS::WORLD_FRAME);
 
@@ -786,6 +786,7 @@ void A2::guiLogic()
 	ImGui::Text("Near: %.1f", near);
 	ImGui::SameLine();
 	ImGui::Text("Far: %.1f", far);
+	ImGui::Text("FOV: %.1f", fov);
 
 	ImGui::End();
 }
