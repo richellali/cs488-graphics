@@ -75,6 +75,8 @@ protected:
 	void mapVboDataToVertexAttributeLocation();
 	void uploadVertexDataToVbos();
 
+	void reset();
+
 	// UI
 	int current_widget;
 
@@ -131,13 +133,11 @@ protected:
 	// matrix 
 	// model
 	glm::mat4 m_transform;
-	// glm::mat4 m_rotate;
-	glm::mat4 norm_transform;
+	glm::mat4 m_scale;
 
 	// view
 	glm::mat4 model_to_view;
 	glm::mat4 v_transform;
-	// glm::mat4 v_rotate;
 
 	// projection
 	float fov;
@@ -145,7 +145,10 @@ protected:
 	float far;
 	glm::mat4 proj;
 	void initProj();
+
+	// perpective
 	void change_fov(double x_mov);
+	void perspective(double x_mov);
 
 	bool clip_helper(glm::vec4 &A, glm::vec4 &B, float wecA, float wecB);
 	bool clip(glm::vec4 &A, glm::vec4 &B);

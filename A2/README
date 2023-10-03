@@ -1,0 +1,11 @@
+COMPILATION:
+premake4 gmake
+make
+./A2
+
+INSTRUCTION:
+- The implementation of viewport is based on constant window width and height.
+  Resizing window will make viewport behave unusual.
+- Changing viewport only appears when user drags a window. Clicking might result in disappearing or weird behaviour of the viewport.
+  Please only drag to create new viewport.
+

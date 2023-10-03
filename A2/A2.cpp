@@ -33,7 +33,7 @@ A2::A2()
 	  // projection
 	  fov(30.0f),
 	  near(1.0f),
-	  far(2000.f),
+	  far(50.0f),
 
 	  // viewport
 	  viewport_activated(false),
@@ -49,10 +49,8 @@ A2::A2()
 
 	  // matrix
 	  m_transform(mat4(1.0f)),
-	//   m_rotate(mat4(1.0f)),
-	  norm_transform(mat4(1.0f)),
+	  m_scale(mat4(1.0f)),
 	  v_transform(mat4(1.0f))
-	//   v_rotate(mat4(1.0f))
 {
 }
 
@@ -84,9 +82,30 @@ void A2::init()
 	initCube();
 	initWorldCoord();
 	initModelCoord();
+
 	initViewport();
 	initProj();
 	initView();
+}
+
+void A2::reset()
+{
+	// projection
+	fov = 30.0f;
+	near = 1.0f;
+	far = 50.0f;
+
+	// UI
+	current_widget = 0;
+
+	// matrix
+	m_transform = mat4(1.0f);
+	m_scale = mat4(1.0f);
+	v_transform = mat4(1.0f);
+
+	initView();
+	initViewport();
+	initProj();
 }
 
 //----------------------------------------------------------------------------------------
@@ -99,7 +118,7 @@ void A2::initViewport()
 	vp_x1 = 0.05 * m_windowWidth;
 	vp_y1 = 0.05 * m_windowHeight;
 	vp_x2 = 0.95 * m_windowWidth;
- 	vp_y2 = 0.95 * m_windowHeight;
+	vp_y2 = 0.95 * m_windowHeight;
 }
 
 void A2::initWorldCoord()
@@ -304,12 +323,14 @@ void A2::drawLine(
 //---------------------------------------------------------------------------------------
 /*
 	TRANSFORMATION - MODEL
-*/ 
+*/
 
-void A2::rotate_model(double x_mov) {
+void A2::rotate_model(double x_mov)
+{
 	float theta = x_mov * 0.01f;
-	
-	if (axis.x) {
+
+	if (axis.x)
+	{
 		mat4 rotate(1.0f);
 
 		rotate[1].y = cos(theta);
@@ -317,11 +338,11 @@ void A2::rotate_model(double x_mov) {
 		rotate[2].y = -sin(theta);
 		rotate[2].z = cos(theta);
 
-		m_transform = rotate * m_transform;
-		norm_transform = rotate * norm_transform;
+		m_transform *= rotate;
 	}
 
-	if (axis.y) {
+	if (axis.y)
+	{
 		mat4 rotate(1.0f);
 
 		rotate[0].x = cos(theta);
@@ -329,11 +350,11 @@ void A2::rotate_model(double x_mov) {
 		rotate[2].x = sin(theta);
 		rotate[2].z = cos(theta);
 
-		m_transform = rotate * m_transform;
-		norm_transform = rotate * norm_transform;
+		m_transform *= rotate;
 	}
 
-	if (axis.z) {
+	if (axis.z)
+	{
 		mat4 rotate(1.0f);
 
 		rotate[0].x = cos(theta);
@@ -341,63 +362,69 @@ void A2::rotate_model(double x_mov) {
 		rotate[1].x = -sin(theta);
 		rotate[1].y = cos(theta);
 
-		m_transform = rotate * m_transform;
-		norm_transform = rotate * norm_transform;
+		m_transform *= rotate;
 	}
-
-
 }
 
-void A2::translate_model(double x_mov) {
+void A2::translate_model(double x_mov)
+{
 	double factor = 0.05f;
 	mat4 translate(1.0f);
 
-	if (axis.x) {
+	if (axis.x)
+	{
 		translate[3].x = x_mov * factor;
 	}
 
-	if (axis.y) {
+	if (axis.y)
+	{
 		translate[3].y = x_mov * factor;
 	}
 
-	if (axis.z) {
+	if (axis.z)
+	{
 		translate[3].z = x_mov * factor;
 	}
 
-	m_transform = translate * m_transform;
-	norm_transform = translate * norm_transform;
+	m_transform *= translate;
 }
 
-void A2::scale_model(double x_mov) {
+void A2::scale_model(double x_mov)
+{
 	double factor = 0.05f;
 	mat4 scale(1.0f);
 
 	double min_scale;
-	1.0f + x_mov * factor > 0 ? min_scale = 1.0f + x_mov * factor : min_scale = 1.0f;
+	1.0f + x_mov *factor > 0 ? min_scale = 1.0f + x_mov *factor : min_scale = 1.0f;
 
-	if (axis.x) {
+	if (axis.x)
+	{
 		scale[0].x *= min_scale;
 	}
 
-	if (axis.y) {
+	if (axis.y)
+	{
 		scale[1].y = min_scale;
 	}
 
-	if (axis.z) {
+	if (axis.z)
+	{
 		scale[2].z = min_scale;
 	}
 
-	m_transform = scale * m_transform;
+	m_scale *= scale;
 }
 
 /*
 	TRANSFORMATION - VIEW
 */
 
-void A2::rotate_view(double x_mov) {
+void A2::rotate_view(double x_mov)
+{
 	float theta = x_mov * 0.01f;
-	
-	if (axis.x) {
+
+	if (axis.x)
+	{
 		mat4 rotate(1.0f);
 
 		rotate[1].y = cos(theta);
@@ -405,10 +432,11 @@ void A2::rotate_view(double x_mov) {
 		rotate[2].y = -sin(theta);
 		rotate[2].z = cos(theta);
 
-		v_transform *= inverse(rotate);
+		v_transform = inverse(rotate) * v_transform;
 	}
 
-	if (axis.y) {
+	if (axis.y)
+	{
 		mat4 rotate(1.0f);
 
 		rotate[0].x = cos(theta);
@@ -416,10 +444,11 @@ void A2::rotate_view(double x_mov) {
 		rotate[2].x = sin(theta);
 		rotate[2].z = cos(theta);
 
-		v_transform *= inverse(rotate);
+		v_transform = inverse(rotate) * v_transform;
 	}
 
-	if (axis.z) {
+	if (axis.z)
+	{
 		mat4 rotate(1.0f);
 
 		rotate[0].x = cos(theta);
@@ -427,30 +456,39 @@ void A2::rotate_view(double x_mov) {
 		rotate[1].x = -sin(theta);
 		rotate[1].y = cos(theta);
 
-		v_transform *= inverse(rotate);
+		v_transform = inverse(rotate) * v_transform;
 	}
 }
 
-void A2::translate_view(double x_mov) {
+void A2::translate_view(double x_mov)
+{
 	float factor = 0.05f;
 	mat4 translate(1.0f);
 
-	if (axis.x) {
+	if (axis.x)
+	{
 		translate[3].x = x_mov * factor;
 	}
 
-	if (axis.y) {
+	if (axis.y)
+	{
 		translate[3].y = x_mov * factor;
 	}
 
-	if (axis.z) {
+	if (axis.z)
+	{
 		translate[3].z = x_mov * factor;
 	}
 
-	v_transform *= inverse(translate);
+	v_transform = inverse(translate) * v_transform;
 }
 
-void A2::change_fov(double x_mov) {
+/*
+----------------------------------------------------------------------
+*/
+
+void A2::change_fov(double x_mov)
+{
 	float factor = 0.05f;
 	fov += 0.05f * x_mov;
 
@@ -459,17 +497,43 @@ void A2::change_fov(double x_mov) {
 	} else if (fov < 5) {
 		fov = 5;
 	} 
-	initProj();
 }
 
-// TODO: modify this
+void A2::perspective(double x_mov)
+{
+	float factor = 0.01f;
+	if (axis.x)
+	{
+		change_fov(x_mov);
+	}
+
+	if (axis.y)
+	{
+		near += factor * x_mov;
+		near = (near <= 0.1f ? 0.1f : near);
+		near = (near >= far - 0.1f ? far - 0.1f : near);
+	}
+
+	if (axis.z)
+	{
+		far = (far + factor * x_mov <= near + 0.1f
+				? near + 0.1f : far + factor * x_mov
+				);
+	}
+
+	initProj();
+
+}
+
+
 void A2::initView()
 {
-	glm::vec3 lookat(0.0f, 0.0f, -1.0f);
-	glm::vec3 lookfrom(0.0f, 0.0f, 5.0f);
-	glm::vec3 up(lookfrom.x, lookfrom.y + 1.0f, lookfrom.z);
 
-	glm::vec3 z((lookat - lookfrom) / glm::distance(lookat, lookfrom));
+	glm::vec3 lookat(0.0f, 0.0f, -1.0f);
+	glm::vec3 cam_pos(0.0f, 0.0f, 5.0f);
+	glm::vec3 up(0.0f, 1.0f, 0.0f);
+
+	glm::vec3 z((lookat - cam_pos) / glm::distance(lookat, cam_pos)); // using pts to get normalized
 	glm::vec3 x(glm::cross(z, up) / glm::distance(glm::cross(z, up), glm::vec3(0.0f)));
 	glm::vec3 y(glm::cross(x, z));
 
@@ -479,89 +543,123 @@ void A2::initView()
 		vec4(z, 0),
 		vec4(0.0f, 0.0f, 0.0f, 1.0f),
 	};
-	R = glm::transpose(R);
+
+	R = transpose(R);
+
 	glm::mat4 T(1.0f);
-	T[3].z = -lookfrom.z;
+	T[3].z = -cam_pos.z;
 	model_to_view = R * T;
 }
 
-void A2::initProj() {
+void A2::initProj()
+{
 	float aspect = m_windowWidth / m_windowHeight;
 	float cot_fov = cos(radians(fov)) / sin(radians(fov));
 
-	proj = mat4{
-		cot_fov/aspect, 0, 0, 0,
-		0, cot_fov, 0, 0,
-		0, 0, (far+near)/(far-near), 1,
-		0, 0, -2*far*near/(far-near), 0,
-	};
+	proj = transpose(mat4{
+		cot_fov / aspect,
+		0,
+		0,
+		0,
+
+		0,
+		cot_fov,
+		0,
+		0,
+
+		0,
+		0,
+		(far + near) / (far - near),
+		-2 * far * near / (far - near),
+
+		0,
+		0,
+		1,
+		0,
+	});
 }
 
 //----------------------------------------------------------------------------------------
-// 
+//
 
-bool A2::clip_helper(vec4 &A, vec4 &B, float wecA, float wecB) {
-	if (wecA < 0 && wecB < 0) {
+bool A2::clip_helper(vec4 &A, vec4 &B, float wecA, float wecB)
+{
+	if (wecA < 0 && wecB < 0)
+	{
 		return false;
 	}
 
-	if (wecA >= 0 && wecB >= 0) {
+	if (wecA >= 0 && wecB >= 0)
+	{
 		return true;
 	}
 	float t = wecA / (wecA - wecB);
-	if (wecA < 0) {
-		A = A + t * (B-A);
-	} else {
-		B = A + t * (B-A);
+	if (wecA < 0)
+	{
+		A = A + t * (B - A);
+	}
+	else
+	{
+		B = A + t * (B - A);
 	}
 	return true;
 }
 
-bool A2::clip(vec4 &A, vec4 &B) {
+bool A2::clip(vec4 &A, vec4 &B)
+{
 	float wecA, wecB;
 
 	// left
 	wecA = A.w + A.x;
 	wecB = B.w + B.x;
-	if (!clip_helper(A, B, wecA, wecB)) return false;
+	if (!clip_helper(A, B, wecA, wecB))
+		return false;
 
 	// right
 	wecA = A.w - A.x;
 	wecB = B.w - B.x;
-	if (!clip_helper(A, B, wecA, wecB)) return false;
-
+	if (!clip_helper(A, B, wecA, wecB))
+		return false;
 
 	wecA = A.w + A.y;
 	wecB = B.w + B.y;
-	if (!clip_helper(A, B, wecA, wecB)) return false;
+	if (!clip_helper(A, B, wecA, wecB))
+		return false;
 
 	wecA = A.w - A.y;
 	wecB = B.w - B.y;
-	if (!clip_helper(A, B, wecA, wecB)) return false;
+	if (!clip_helper(A, B, wecA, wecB))
+		return false;
 
 	wecA = A.w + A.z;
 	wecB = B.w + B.z;
-	if (!clip_helper(A, B, wecA, wecB)) return false;
+	if (!clip_helper(A, B, wecA, wecB))
+		return false;
 
 	wecA = A.w - A.z;
 	wecB = B.w - B.z;
-	if (!clip_helper(A, B, wecA, wecB)) return false;
+	if (!clip_helper(A, B, wecA, wecB))
+		return false;
 
 	return true;
-
 }
 
 vec4 A2::point_transformation(vec4 &point, TRANS trans)
 {
 	vec4 new_pt;
-	if (trans == TRANS::MODEL) {
+	if (trans == TRANS::MODEL)
+	{
+		new_pt = proj * v_transform * model_to_view * m_transform * m_scale * point;
+	}
+	else if (trans == TRANS::MODEL_FRAME)
+	{
 		new_pt = proj * v_transform * model_to_view * m_transform * point;
-	} else if (trans == TRANS::MODEL_FRAME) {
-		new_pt = proj * v_transform * model_to_view * norm_transform * point;
-	} else {
+	}
+	else
+	{
 		new_pt = proj * v_transform * model_to_view * point;
 	}
-	
+
 	return new_pt;
 }
 
@@ -573,10 +671,10 @@ void A2::appLogic()
 	// Place per frame, application logic here ...
 
 	// view port
-	float vp_left = (vp_x1 < vp_x2 ? vp_x1 : vp_x2) / (m_windowWidth/2) - 1;
-	float vp_right = (vp_x1 < vp_x2 ? vp_x2 : vp_x1) / (m_windowWidth/2) - 1;
-	float vp_bottom = 1-(vp_y1 < vp_y2 ? vp_y1 : vp_y2) / (m_windowHeight/2);
-	float vp_top = 1-(vp_y1 < vp_y2 ? vp_y2 : vp_y1) / (m_windowHeight/2);
+	float vp_left = (vp_x1 < vp_x2 ? vp_x1 : vp_x2) / (m_windowWidth / 2) - 1;
+	float vp_right = (vp_x1 < vp_x2 ? vp_x2 : vp_x1) / (m_windowWidth / 2) - 1;
+	float vp_bottom = 1 - (vp_y1 < vp_y2 ? vp_y1 : vp_y2) / (m_windowHeight / 2);
+	float vp_top = 1 - (vp_y1 < vp_y2 ? vp_y2 : vp_y1) / (m_windowHeight / 2);
 
 	float width_ratio = (vp_right - vp_left) / 2;
 	float height_ratio = (vp_bottom - vp_top) / 2;
@@ -590,11 +688,12 @@ void A2::appLogic()
 		vec4 p_a = point_transformation(cube_verts[i], TRANS::MODEL);
 		vec4 p_b = point_transformation(cube_verts[i + 1], TRANS::MODEL);
 
-		if (clip(p_a, p_b)) {
+		if (clip(p_a, p_b))
+		{
 			p_a /= p_a.w;
 			p_b /= p_b.w;
-			drawLine(vec2(width_ratio*(p_a.x+1.0f)+vp_left, height_ratio*(p_a.y+1.0f)+vp_top), 
-				vec2(width_ratio*(p_b.x+1.0f)+vp_left,  height_ratio*(p_b.y+1.0f)+vp_top));
+			drawLine(vec2(width_ratio * (p_a.x + 1.0f) + vp_left, height_ratio * (p_a.y + 1.0f) + vp_top),
+					 vec2(width_ratio * (p_b.x + 1.0f) + vp_left, height_ratio * (p_b.y + 1.0f) + vp_top));
 		}
 	}
 
@@ -605,11 +704,12 @@ void A2::appLogic()
 		vec4 p_a = point_transformation(m_coord_verts[i], TRANS::MODEL_FRAME);
 		vec4 p_b = point_transformation(m_coord_verts[i + 1], TRANS::MODEL_FRAME);
 
-		if (clip(p_a, p_b)) {
+		if (clip(p_a, p_b))
+		{
 			p_a /= p_a.w;
 			p_b /= p_b.w;
-			drawLine(vec2(width_ratio*(p_a.x+1.0f)+vp_left, height_ratio*(p_a.y+1.0f)+vp_top), 
-				vec2(width_ratio*(p_b.x+1.0f)+vp_left,  height_ratio*(p_b.y+1.0f)+vp_top));
+			drawLine(vec2(width_ratio * (p_a.x + 1.0f) + vp_left, height_ratio * (p_a.y + 1.0f) + vp_top),
+					 vec2(width_ratio * (p_b.x + 1.0f) + vp_left, height_ratio * (p_b.y + 1.0f) + vp_top));
 		}
 	}
 
@@ -620,19 +720,20 @@ void A2::appLogic()
 		vec4 p_a = point_transformation(w_coord_verts[i], TRANS::WORLD_FRAME);
 		vec4 p_b = point_transformation(w_coord_verts[i + 1], TRANS::WORLD_FRAME);
 
-		if (clip(p_a, p_b)) {
+		if (clip(p_a, p_b))
+		{
 			p_a /= p_a.w;
 			p_b /= p_b.w;
-			drawLine(vec2(width_ratio*(p_a.x+1.0f)+vp_left, height_ratio*(p_a.y+1.0f)+vp_top), 
-				vec2(width_ratio*(p_b.x+1.0f)+vp_left,  height_ratio*(p_b.y+1.0f)+vp_top));
+			drawLine(vec2(width_ratio * (p_a.x + 1.0f) + vp_left, height_ratio * (p_a.y + 1.0f) + vp_top),
+					 vec2(width_ratio * (p_b.x + 1.0f) + vp_left, height_ratio * (p_b.y + 1.0f) + vp_top));
 		}
 	}
-	
+
 	// viewport
 	setLineColour(vec3(1.0f, 1.0f, 1.0f));
 	// bottom
 	drawLine(vec2(vp_left, vp_bottom), vec2(vp_right, vp_bottom));
-	// top 
+	// top
 	drawLine(vec2(vp_left, vp_top), vec2(vp_right, vp_top));
 	// left
 	drawLine(vec2(vp_left, vp_bottom), vec2(vp_left, vp_top));
@@ -673,15 +774,18 @@ void A2::guiLogic()
 	// Create Button, and check if it was clicked:
 	if (ImGui::Button("Reset (A)"))
 	{
-		
+		reset();
 	}
 
-	if (ImGui::Button("Quit Application"))
+	if (ImGui::Button("Quit Application (Q)"))
 	{
 		glfwSetWindowShouldClose(m_window, GL_TRUE);
 	}
 
 	ImGui::Text("Framerate: %.1f FPS", ImGui::GetIO().Framerate);
+	ImGui::Text("Near: %.1f", near);
+	ImGui::SameLine();
+	ImGui::Text("Far: %.1f", far);
 
 	ImGui::End();
 }
@@ -770,39 +874,43 @@ bool A2::mouseMoveEvent(
 		// Probably need some instance variables to track the current
 		// rotation amount, and maybe the previous X position (so
 		// that you can rotate relative to the *change* in X.
-		if (viewport_activated) {
+		if (viewport_activated)
+		{
 			vp_x1 = xPos;
 			vp_y1 = yPos;
+			prev_mouse_x = xPos;
 			viewport_activated = false;
 		}
 
-		if (m_mouseButtonActive) {
+		if (m_mouseButtonActive)
+		{
 			double move_distance = xPos - prev_mouse_x;
-			switch(current_widget) {
-				case MODE::ROTATE_VIEW:
-					rotate_view(move_distance);
-					break;
-				case MODE::TRANSLATE_VIEW:
-					translate_view(move_distance);
-					break;
-				case MODE::PERSPECTIVE:
-					change_fov(move_distance);
-					break;
-				case MODE::ROTATE_MODEL:
-					rotate_model(move_distance);
-					break;
-				case MODE::TRANSLATE_MODEL:
-					translate_model(move_distance);
-					break;
-				case MODE::SCALE_MODEL:
-					scale_model(move_distance);
-					break;
-				case MODE::VIEWPORT:
-					vp_x2 = xPos;
-					vp_y2 = yPos;
-					break;
-				default:
-					break;
+			switch (current_widget)
+			{
+			case MODE::ROTATE_VIEW:
+				rotate_view(move_distance);
+				break;
+			case MODE::TRANSLATE_VIEW:
+				translate_view(move_distance);
+				break;
+			case MODE::PERSPECTIVE:
+				perspective(move_distance);
+				break;
+			case MODE::ROTATE_MODEL:
+				rotate_model(move_distance);
+				break;
+			case MODE::TRANSLATE_MODEL:
+				translate_model(move_distance);
+				break;
+			case MODE::SCALE_MODEL:
+				scale_model(move_distance);
+				break;
+			case MODE::VIEWPORT:
+				vp_x2 = clamp((float)xPos, 0.0f, (float)m_windowWidth);
+				vp_y2 = clamp((float)yPos, 0.0f, (float)m_windowHeight);
+				break;
+			default:
+				break;
 			}
 		}
 		prev_mouse_x = xPos;
@@ -827,18 +935,23 @@ bool A2::mouseButtonInputEvent(
 	{
 		// The user clicked in the window.  If it's the left
 		// mouse button, initiate a rotation.
-		if (actions == GLFW_PRESS) {
-			if (current_widget == MODE::VIEWPORT) {
+		if (actions == GLFW_PRESS)
+		{
+			if (current_widget == MODE::VIEWPORT)
+			{
 				viewport_activated = true;
 			}
-		
-			if (button == GLFW_MOUSE_BUTTON_LEFT) {
+
+			if (button == GLFW_MOUSE_BUTTON_LEFT)
+			{
 				axis.x = true;
 			}
-			if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+			if (button == GLFW_MOUSE_BUTTON_MIDDLE)
+			{
 				axis.y = true;
 			}
-			if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+			if (button == GLFW_MOUSE_BUTTON_RIGHT)
+			{
 				axis.z = true;
 			}
 			m_mouseButtonActive = true;
@@ -848,19 +961,21 @@ bool A2::mouseButtonInputEvent(
 
 	if (actions == GLFW_RELEASE)
 	{
-		if (button == GLFW_MOUSE_BUTTON_LEFT) {
-				axis.x = false;
-			}
-			if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-				axis.y = false;
-			}
-			if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-				axis.z = false;
-			}
+		if (button == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			axis.x = false;
+		}
+		if (button == GLFW_MOUSE_BUTTON_MIDDLE)
+		{
+			axis.y = false;
+		}
+		if (button == GLFW_MOUSE_BUTTON_RIGHT)
+		{
+			axis.z = false;
+		}
 		m_mouseButtonActive = false;
 		eventHandled = true;
 	}
-
 
 	return eventHandled;
 }
@@ -906,44 +1021,46 @@ bool A2::keyInputEvent(
 {
 	bool eventHandled(false);
 
-	if (action == GLFW_PRESS) {
-		switch(key) {
-			case GLFW_KEY_O:
-				current_widget = MODE::ROTATE_VIEW;
-				eventHandled = true;
-				break;
-			case GLFW_KEY_E:
-				current_widget = MODE::TRANSLATE_VIEW;
-				eventHandled = true;
-				break;
-			case GLFW_KEY_P:
-				current_widget = MODE::PERSPECTIVE;
-				eventHandled = true;
-				break;
-			case GLFW_KEY_R:
-				current_widget = MODE::ROTATE_MODEL;
-				eventHandled = true;
-				break;
-			case GLFW_KEY_T:
-				current_widget = MODE::TRANSLATE_MODEL;
-				eventHandled = true;
-				break;
-			case GLFW_KEY_S:
-				current_widget = MODE::SCALE_MODEL;
-				eventHandled = true;
-				break;
-			case GLFW_KEY_V:
-				current_widget = MODE::VIEWPORT;
-				eventHandled = true;
-				break;
-			case GLFW_KEY_A:
-			// TODO:: fill in for reset
-				break;
-			case GLFW_KEY_Q:
-				glfwSetWindowShouldClose(m_window, GL_TRUE);
-				break;
-			default:
-				break;
+	if (action == GLFW_PRESS)
+	{
+		switch (key)
+		{
+		case GLFW_KEY_O:
+			current_widget = MODE::ROTATE_VIEW;
+			eventHandled = true;
+			break;
+		case GLFW_KEY_E:
+			current_widget = MODE::TRANSLATE_VIEW;
+			eventHandled = true;
+			break;
+		case GLFW_KEY_P:
+			current_widget = MODE::PERSPECTIVE;
+			eventHandled = true;
+			break;
+		case GLFW_KEY_R:
+			current_widget = MODE::ROTATE_MODEL;
+			eventHandled = true;
+			break;
+		case GLFW_KEY_T:
+			current_widget = MODE::TRANSLATE_MODEL;
+			eventHandled = true;
+			break;
+		case GLFW_KEY_S:
+			current_widget = MODE::SCALE_MODEL;
+			eventHandled = true;
+			break;
+		case GLFW_KEY_V:
+			current_widget = MODE::VIEWPORT;
+			eventHandled = true;
+			break;
+		case GLFW_KEY_A:
+			reset();
+			break;
+		case GLFW_KEY_Q:
+			glfwSetWindowShouldClose(m_window, GL_TRUE);
+			break;
+		default:
+			break;
 		}
 	}
 
