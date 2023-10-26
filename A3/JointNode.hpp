@@ -15,7 +15,21 @@ public:
 	struct JointRange {
 		double min, init, max;
 	};
-
+	float xAngle;
+	float yAngle;
 
 	JointRange m_joint_x, m_joint_y;
+
+	void rotate(char axis, float angle);
+
+	void setXAngle(float angle);
+	void setYAngle(float angle);
+
+	bool isNotRotatable();
+
+	float restrictX(float angleChanges);
+	float restrictY(float angleChanges);
+
+	void setXRotation(float angle);
+	void setYRotation(float angle);
 };

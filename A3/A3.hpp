@@ -8,8 +8,12 @@
 #include "cs488-framework/MeshConsolidator.hpp"
 
 #include "SceneNode.hpp"
+#include "GeometryNode.hpp"
+#include "JointNode.hpp"
 
 #include <glm/glm.hpp>
+#include <map>
+#include <vector>
 #include <memory>
 
 struct LightSource {
@@ -17,6 +21,25 @@ struct LightSource {
 	glm::vec3 rgbIntensity;
 };
 
+enum MODE {
+	POSITION_ORIEN = 0,
+	JOINTS = 1,
+};
+
+struct M_Button{
+		bool left;
+		bool middle;
+		bool right;
+	};
+
+struct JointStat {
+	JointNode *node;
+	float xAngle;
+	float yAngle;
+	glm::mat4 trans;
+	bool isSelected;
+
+};
 
 class A3 : public CS488Window {
 public:
@@ -51,6 +74,17 @@ protected:
 	void uploadCommonSceneUniforms();
 	void renderSceneGraph(const SceneNode &node);
 	void renderArcCircle();
+	void renderGeometryNode(const SceneNode *node, glm::mat4 modelMatrix);
+
+	//-- Transformation
+	void translate_puppet(double x_mov, double y_mov);
+	void rotate_puppet(double xPos, double yPos);
+	void rotate_joints(double x_mov, double y_mov);
+
+	//-- Picking
+	void initPickingMap(SceneNode &node);
+	void mouseClickedPicking();
+	void selectOrDisselectJoints(unsigned int nodeId, SceneNode &node);
 
 	glm::mat4 m_perpsective;
 	glm::mat4 m_view;
@@ -79,4 +113,44 @@ protected:
 	std::string m_luaSceneFile;
 
 	std::shared_ptr<SceneNode> m_rootNode;
+
+	// -- GUI
+	int current_widget;
+	bool circle_box;
+	bool zBuffer_box;
+	bool backfaceCulling_box;
+	bool frontfaceCulling_box;
+
+	// -- Mouse Input
+	bool m_mouseButtonActive;
+	double prev_mouse_x;
+	double prev_mouse_y;
+	M_Button m_button;
+
+	// -- transformation
+	bool areJointsRotated;
+	glm::mat4 model_translate;
+	glm::mat4 model_rotate;
+
+	// -- picking
+	bool do_picking;
+	std::map<unsigned int, SceneNode *> pickingMap;
+	std::vector<SceneNode*> selectedJoints;
+
+	// -- GUI
+	void resetPos();
+	void resetOrien();
+	void resetJoints();
+	void resetAll();
+
+	// -- Undo/Redo
+	int curStackIdx;
+	int curStackSize;
+	std::vector<std::vector<JointStat>> undoRedoStack;
+
+	void applyCurIdxToStack();
+	void undoStack();
+	void redoStack();
+	void addNewStatToStack();
+	void createUndoRedoStack(SceneNode* node, int idx);
 };

@@ -1,0 +1,21 @@
+COMPILATION:
+premake4 gmake
+make
+./A3 Assets/puppet.lua
+
+INSTRUCTION:
+- Undo/Redo Stack
+    - Stack starts at index 0
+    - The stack does not recognize which joints are selected, it ONLY recognize 
+        transformations of JOINTS. Any transformations of puppet is not 
+        expected to be recoginized.
+    - When some parts are picked, and middle/right mouse button is pressed->released.
+        A layer of transformtion will be added to the stack.
+        Notice it will still be added even there is NO actuall rotation happen due 
+        to reaching limits of rotation.
+
+- Selection or Disselection
+    - If joints are selected, they will exist forever unless you manually disselect it.      
+        Switching mode, undo/redo, reset have no effects on selected joints.
+    - Selected joints do not have special color in Position/Orientation mode, 
+        but you can see them once you switch back to Joint mode.
