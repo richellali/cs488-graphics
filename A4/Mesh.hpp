@@ -31,11 +31,15 @@ struct Triangle
 // A polygonal mesh.
 class Mesh : public Primitive {
 public:
-  Mesh( const std::string& fname );
+  Mesh(const std::string& fname );
+  Mesh(const std::string &fname, const glm::vec3 &m_pos, double m_size);
+
+  bool intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) override;
   
 private:
 	std::vector<glm::vec3> m_vertices;
 	std::vector<Triangle> m_faces;
+	std::string fname;
 
     friend std::ostream& operator<<(std::ostream& out, const Mesh& mesh);
 };

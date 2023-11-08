@@ -1,6 +1,9 @@
 // Termm--Fall 2023
 
 #include "GeometryNode.hpp"
+#include <glm/glm.hpp> 
+
+using namespace glm;
 
 //---------------------------------------------------------------------------------------
 GeometryNode::GeometryNode(
@@ -26,4 +29,39 @@ void GeometryNode::setMaterial( Material *mat )
 	//     crash the program.
 
 	m_material = mat;
+}
+
+bool GeometryNode::intersected(Ray &ray, float tmin, HitRecord &rec) {
+	HitRecord tempRec;
+
+	vec4 transOrig = invtrans * vec4(ray.getOrigin(), 1.0);
+	vec4 transDir = invtrans * vec4(ray.getDirection(), 0.0);
+	Ray transRay = Ray(vec3(transOrig.x, transOrig.y, transOrig.z),
+	vec3(transDir.x, transDir.y, transDir.z));
+
+	bool isIntersected = m_primitive->intersected(transRay, tmin, rec.t, tempRec);
+
+	if (isIntersected) {
+		rec.t = tempRec.t;
+		rec.p = tempRec.p;
+		rec.normal = tempRec.normal;
+		rec.material = m_material;
+	}
+
+		
+	for(SceneNode * child : children) {
+		if (child->intersected(transRay, tmin, rec)) {
+			isIntersected = true;
+		}
+	}
+
+	if (isIntersected) {
+		vec4 transNormal = transpose(invtrans) * vec4(rec.normal, 0.0f);
+		vec4 transPoint = trans * vec4(rec.p, 1.0f);
+
+		rec.normal = vec3(transNormal.x, transNormal.y, transNormal.z);
+		rec.p = vec3(transPoint.x, transPoint.y, transPoint.z);
+	}
+
+	return isIntersected;
 }

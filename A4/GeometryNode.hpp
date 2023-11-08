@@ -15,4 +15,6 @@ public:
 
 	Material *m_material;
 	Primitive *m_primitive;
+
+	bool intersected(Ray &ray, float tmin, HitRecord &rec) override;
 };

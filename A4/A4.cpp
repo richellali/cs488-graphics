@@ -3,6 +3,53 @@
 #include <glm/ext.hpp>
 
 #include "A4.hpp"
+#include "HitRecord.hpp"
+#include "PhongMaterial.hpp"
+
+using namespace glm;
+
+vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 & ambient,
+		const std::list<Light *> & lights, const glm::vec3 & eye) {
+	vec3 colour;
+
+	HitRecord rec;
+	rec.t = std::numeric_limits<float>::max();
+
+	if (root->intersected(ray, 0.0f, rec)){
+		// get colour of the closet object
+
+		PhongMaterial *material = static_cast<PhongMaterial *>(rec.material);
+
+		// ambient light source
+		colour = ambient * material->kd();
+
+		for (Light *light : lights) {
+			
+			vec3 l = light->position - rec.p;
+			float light_length = length(l);
+			float attenuation = light->falloff[0] + light->falloff[1]*light_length + light->falloff[2]*light_length*light_length;
+			
+			l = normalize(l);
+			vec3 n = normalize(rec.normal);
+			vec3 r = normalize(-l + 2 * dot(l, n) * n);
+			vec3 v = normalize(eye - rec.p);
+
+			float vDotRPow = pow(max(0.0f, (float)dot(v, r)), material->p());
+			float nDotL = dot(n, l);
+
+			colour += light->colour * (material->kd() + material->ks() * vDotRPow / nDotL) * nDotL / attenuation;
+
+		}
+		
+	} else {
+		// use ray direction 
+		vec3 direc = normalize(ray.getDirection());
+		// up blue down orange
+		colour = (1-direc.y) * vec3(1.0, 0.702, 0.388)+ (direc.y) * vec3(0.357, 0.675, 0.831);
+
+	}
+	return colour;
+}
 
 void A4_Render(
 		// What to render  
@@ -43,15 +90,38 @@ void A4_Render(
 	size_t h = image.height();
 	size_t w = image.width();
 
-	for (uint y = 0; y < h; ++y) {
-		for (uint x = 0; x < w; ++x) {
+	// Get direction of the ray
+
+	// calculate unit vector of x, y, z
+	vec3 z = normalize(view);
+	vec3 x = cross(z, up);
+	vec3 y = normalize(up);
+
+	// calculate the distance from eye to the center of screen
+	float d_norm = h / 2 / tan(radians(fovy / 2));
+	// get the vector pointing to bottom left corner of the screen
+	vec3 bot_left_direction = z * d_norm - x * (w/2) - y * (h/2);
+
+	std::cout << to_string(bot_left_direction) <<std::endl;
+	// colouring every pixel in the screen
+	for (uint j=0; j<h; j++){
+		for (uint i=0; i<w; i++){
+			// get the direction to every pixel
+			vec3 direction = bot_left_direction + (float)(h-j) * y + (float)i * x;
+
+			Ray ray = Ray(eye, direction);
+
+			vec3 colour= ray_trace(ray, root, ambient, lights, eye);
+
 			// Red: 
-			image(x, y, 0) = (double)1.0;
+			image(i, j, 0) = (double)colour.r;
 			// Green: 
-			image(x, y, 1) = (double)1.0;
+			image(i, j, 1) = (double)colour.g;
 			// Blue: 
-			image(x, y, 2) = (double)1.0;
+			image(i, j, 2) = (double)colour.b;
 		}
 	}
+
+
 
 }

@@ -1,23 +1,93 @@
 // Termm--Fall 2023
 
 #include "Primitive.hpp"
+#include "Mesh.hpp"
+#include "polyroots.hpp"
+#include <iostream>
+
+using namespace glm;
 
 Primitive::~Primitive()
 {
 }
 
+bool Primitive::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
+    return false;
+}
+
+Sphere::Sphere() {
+    nh_sphere = new NonhierSphere(vec3(0.0), 1.0);
+}
+
 Sphere::~Sphere()
 {
+    if (nh_sphere) delete nh_sphere;
+}
+
+bool Sphere::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
+    return nh_sphere->intersected(ray, tmin, tmax, rec);
+}
+
+Cube::Cube() {
+    nh_box = new NonhierBox(vec3(0.0), 1.0);
 }
 
 Cube::~Cube()
 {
+    if (nh_box) delete nh_box;
+}
+
+bool Cube::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
+    return nh_box->intersected(ray, tmin, tmax, rec);
 }
 
 NonhierSphere::~NonhierSphere()
 {
 }
 
+bool NonhierSphere::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
+
+    vec3 center_vec = ray.getOrigin() - m_pos;
+
+    double A = dot(ray.getDirection(), ray.getDirection());
+    double B = 2 * dot(ray.getDirection(), center_vec);
+    double C = dot(center_vec, center_vec) - m_radius * m_radius;
+
+    double roots[2];
+
+    size_t numRoots = quadraticRoots(A, B, C, roots);
+
+    double t;
+
+    if (numRoots == 0 ) {
+        return false;
+    } else if (numRoots == 1) {
+        t = roots[0];
+    } else {
+        t = min(roots[0], roots[1]);
+    }
+
+    if (t < tmin || t > tmax) return false;
+
+    rec.t = t;
+    rec.p = ray.at(t);
+    rec.normal = rec.p - m_pos;
+
+    return true;
+
+}
+
+NonhierBox::NonhierBox(const glm::vec3& pos, double size)
+    : m_pos(pos), m_size(size)
+  {
+    m_mesh = new Mesh("cube.obj", pos, size);
+  }
+
 NonhierBox::~NonhierBox()
 {
+    if (m_mesh) delete m_mesh;
+}
+
+bool NonhierBox::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
+    return m_mesh->intersected(ray, tmin, tmax, rec);
 }

@@ -5,6 +5,8 @@
 #include "Material.hpp"
 
 #include <glm/glm.hpp>
+#include "Ray.hpp"
+#include "HitRecord.hpp"
 
 #include <list>
 #include <string>
@@ -52,6 +54,9 @@ public:
 	NodeType m_nodeType;
 	std::string m_name;
 	unsigned int m_nodeId;
+
+    // Ray Tracing
+    virtual bool intersected(Ray &ray, float tmin, HitRecord &rec);
 
 private:
 	// The number of SceneNode instances.
