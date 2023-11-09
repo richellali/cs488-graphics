@@ -45,6 +45,15 @@ NonhierSphere::~NonhierSphere()
 {
 }
 
+void NonhierSphere::get_uv(HitRecord &rec) {
+    vec3 d = normalize(m_pos - rec.p);
+    double PI = 3.1415926;
+
+    rec.u = 0.5 + atan2(d.z, d.x) / (2*PI);
+    rec.v = 0.5 + asin(d.y) / PI;
+
+}
+
 bool NonhierSphere::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
 
     vec3 center_vec = ray.getOrigin() - m_pos;
@@ -72,6 +81,7 @@ bool NonhierSphere::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec
     rec.t = t;
     rec.p = ray.at(t);
     rec.normal = rec.p - m_pos;
+    get_uv(rec);
 
     return true;
 
@@ -80,7 +90,7 @@ bool NonhierSphere::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec
 NonhierBox::NonhierBox(const glm::vec3& pos, double size)
     : m_pos(pos), m_size(size)
   {
-    m_mesh = new Mesh("cube.obj", pos, size);
+    m_mesh = new Mesh(pos, size);
   }
 
 NonhierBox::~NonhierBox()
@@ -89,5 +99,21 @@ NonhierBox::~NonhierBox()
 }
 
 bool NonhierBox::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
-    return m_mesh->intersected(ray, tmin, tmax, rec);
+    if (m_mesh->intersected(ray, tmin, tmax, rec)){
+        vec3 normP = (rec.p - m_pos) / (float)m_size;
+
+        if (normP.x <= 0.0001 || normP.x >= 0.9999) {
+            rec.u = normP.z;
+            rec.v = normP.y;
+
+        } else if ((normP.y <= 0.0001 || normP.y >= 0.9999)) {
+            rec.u = normP.x;
+            rec.v = normP.z;
+        } else {
+            rec.u = normP.x;
+            rec.v = normP.y;
+        }
+        return true;
+    } 
+    return false;
 }

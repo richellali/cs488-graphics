@@ -13,7 +13,7 @@
 // Use this #define to selectively compile your code to render the
 // bounding boxes around your mesh objects. Uncomment this option
 // to turn it on.
-//#define RENDER_BOUNDING_VOLUMES
+#define RENDER_BOUNDING_VOLUMES
 
 struct Triangle
 {
@@ -32,7 +32,9 @@ struct Triangle
 class Mesh : public Primitive {
 public:
   Mesh(const std::string& fname );
-  Mesh(const std::string &fname, const glm::vec3 &m_pos, double m_size);
+  Mesh(const glm::vec3 &m_pos, double m_size);
+
+  virtual ~Mesh();
 
   bool intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) override;
   
@@ -40,6 +42,12 @@ private:
 	std::vector<glm::vec3> m_vertices;
 	std::vector<Triangle> m_faces;
 	std::string fname;
+
+	#ifdef RENDER_BOUNDING_VOLUMES
+		glm::vec3 min_vec;
+		glm::vec3 max_vec;
+		Primitive *nh_box;
+	#endif
 
     friend std::ostream& operator<<(std::ostream& out, const Mesh& mesh);
 };

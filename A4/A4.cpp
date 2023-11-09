@@ -15,15 +15,33 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 & ambient,
 	HitRecord rec;
 	rec.t = std::numeric_limits<float>::max();
 
-	if (root->intersected(ray, 0.0f, rec)){
+	if (root->intersected(ray, 0.00001f, rec)){
 		// get colour of the closet object
-
 		PhongMaterial *material = static_cast<PhongMaterial *>(rec.material);
 
+		vec3 kd = rec.texture ? rec.texture->colour(rec.u, rec.v) : material->kd();
+		vec3 ks = rec.texture ? rec.texture->colour(rec.u, rec.v) : material->ks();
+
+		// if (rec.texture) std::cout << to_string(rec.texture->colour(rec.u, rec.v)) << std::endl;
+
 		// ambient light source
-		colour = ambient * material->kd();
+		// if (rec.texture) {
+		// 	colour = ambient * kd;
+		// 	return colour;
+		// }
+		colour = ambient * kd;
+
+		// move hitpoint outside of the surface to avoid incorrect numerical rounding
+		rec.p += normalize(rec.normal) * 0.0001f;
 
 		for (Light *light : lights) {
+			Ray shadow = Ray(rec.p, light->position - rec.p);
+			HitRecord dummyRec;
+			dummyRec.t = std::numeric_limits<float>::max();
+
+			if (root->intersected(shadow, 0.0f, dummyRec)){
+				continue;
+			}
 			
 			vec3 l = light->position - rec.p;
 			float light_length = length(l);
@@ -36,9 +54,8 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 & ambient,
 
 			float vDotRPow = pow(max(0.0f, (float)dot(v, r)), material->p());
 			float nDotL = dot(n, l);
-
-			colour += light->colour * (material->kd() + material->ks() * vDotRPow / nDotL) * nDotL / attenuation;
-
+			
+			colour += light->colour * (kd + ks * vDotRPow / nDotL) * nDotL / attenuation;
 		}
 		
 	} else {

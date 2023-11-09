@@ -40,6 +40,7 @@ public:
   
   virtual ~NonhierSphere();
   bool intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) override;
+  void get_uv(HitRecord &rec);
 
 private:
   glm::vec3 m_pos;
@@ -52,6 +53,7 @@ public:
   
   virtual ~NonhierBox();
   bool intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) override;
+  void get_uv(HitRecord &rec);
 
 private:
   glm::vec3 m_pos;

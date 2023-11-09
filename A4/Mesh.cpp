@@ -71,6 +71,15 @@ Mesh::Mesh(const std::string &fname)
     {
       ifs >> vx >> vy >> vz;
       m_vertices.push_back(glm::vec3(vx, vy, vz));
+      #ifdef RENDER_BOUNDING_VOLUMES
+      min_vec.x = min(vx, (double)min_vec.x);
+      min_vec.y = min(vx, (double)min_vec.y);
+      min_vec.z = min(vx, (double)min_vec.z);
+
+		  max_vec.x = max(vx, (double)max_vec.x);
+      max_vec.y = max(vx, (double)max_vec.y);
+      max_vec.z = max(vx, (double)max_vec.z);
+	    #endif
     }
     else if (code == "f")
     {
@@ -78,10 +87,15 @@ Mesh::Mesh(const std::string &fname)
       m_faces.push_back(Triangle(s1 - 1, s2 - 1, s3 - 1));
     }
   }
+  #ifdef RENDER_BOUNDING_VOLUMES
+  vec3 temp = max_vec - min_vec;
+  double max_sz = max(max(temp.x, temp.y), temp.z);
+  nh_box = new NonhierBox(min_vec, max_sz);
+  #endif
 }
 
-Mesh::Mesh(const std::string &fname, const glm::vec3 &m_pos, double m_size)
-    : m_vertices(), m_faces(), fname(fname)
+Mesh::Mesh(const glm::vec3 &m_pos, double m_size)
+    : m_vertices(), m_faces(), fname("cube.obj")
 {
   std::string code;
   double vx, vy, vz;
@@ -104,6 +118,13 @@ Mesh::Mesh(const std::string &fname, const glm::vec3 &m_pos, double m_size)
       m_faces.push_back(Triangle(s1 - 1, s2 - 1, s3 - 1));
     }
   }
+}
+
+Mesh::~Mesh()
+{
+    #ifdef RENDER_BOUNDING_VOLUMES
+    if (nh_box) delete nh_box;
+    #endif
 }
 
 std::ostream &operator<<(std::ostream &out, const Mesh &mesh)
@@ -133,6 +154,14 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
   float tClosest = tmax;
 
   vec3 normal;
+
+  #ifdef RENDER_BOUNDING_VOLUMES
+  HitRecord temp;
+  temp.t = std::numeric_limits<float>::max();
+   if (nh_box && !nh_box->intersected(ray, tmin, tmax, temp)) {
+    return isIntersected;
+  }
+  #endif
 
   for (Triangle triangle : m_faces)
   {
