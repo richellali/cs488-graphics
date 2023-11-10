@@ -87,11 +87,11 @@ Mesh::Mesh(const std::string &fname)
       m_faces.push_back(Triangle(s1 - 1, s2 - 1, s3 - 1));
     }
   }
-  #ifdef RENDER_BOUNDING_VOLUMES
+  // #ifdef RENDER_BOUNDING_VOLUMES
   vec3 temp = max_vec - min_vec;
   double max_sz = max(max(temp.x, temp.y), temp.z);
   nh_box = new NonhierBox(min_vec, max_sz);
-  #endif
+  // #endif
 }
 
 Mesh::Mesh(const glm::vec3 &m_pos, double m_size)
@@ -122,9 +122,9 @@ Mesh::Mesh(const glm::vec3 &m_pos, double m_size)
 
 Mesh::~Mesh()
 {
-    #ifdef RENDER_BOUNDING_VOLUMES
+    // #ifdef RENDER_BOUNDING_VOLUMES
     if (nh_box) delete nh_box;
-    #endif
+    // #endif
 }
 
 std::ostream &operator<<(std::ostream &out, const Mesh &mesh)
@@ -165,12 +165,17 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
   vec3 normal;
 
   #ifdef RENDER_BOUNDING_VOLUMES
+  
+   if (nh_box && !nh_box->intersected(ray, tmin, tmax, rec)) {
+    return nh_box->intersected(ray, tmin, tmax, rec);
+  } 
+  #endif
+
   HitRecord temp;
   temp.t = std::numeric_limits<float>::max();
-   if (nh_box && !nh_box->intersected(ray, tmin, tmax, temp)) {
+  if (nh_box && !nh_box->intersected(ray, tmin, tmax, temp)) {
     return isIntersected;
-  }
-  #endif
+  } 
 
   for (Triangle triangle : m_faces)
   {

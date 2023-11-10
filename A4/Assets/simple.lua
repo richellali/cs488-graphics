@@ -3,14 +3,12 @@
 mat1 = gr.material({0.7, 1.0, 0.7}, {0.5, 0.7, 0.5}, 25)
 mat2 = gr.material({0.5, 0.5, 0.5}, {0.5, 0.7, 0.5}, 25)
 mat3 = gr.material({1.0, 0.6, 0.1}, {0.5, 0.7, 0.5}, 25)
-tex = gr.texture('earth.png')
 
 scene_root = gr.node('root')
 
 s1 = gr.nh_sphere('s1', {0, 0, -400}, 100)
 scene_root:add_child(s1)
 s1:set_material(mat1)
-s1:set_texture(tex)
 s2 = gr.nh_sphere('s2', {200, 50, -100}, 150)
 scene_root:add_child(s2)
 s2:set_material(mat1)
