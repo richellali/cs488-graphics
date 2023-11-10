@@ -11,6 +11,8 @@ INSTRUCTION:
     unique scene in the Assets folder, which has a name of unique_scene.png
     - The scene is about a farm in a dry land. There is a meteor in the center
       of the scene.
+- Bounding Box:
+  - I used cube to make bounding box.
 - nonhier2.lua outputs nonhier2.png
 - nonhier.lua outputs nonhier-bb.png
 - macho-cows outputs macho-cows-bb.png
