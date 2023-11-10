@@ -14,7 +14,7 @@
 // Use this #define to selectively compile your code to render the
 // bounding boxes around your mesh objects. Uncomment this option
 // to turn it on.
-#define RENDER_BOUNDING_VOLUMES
+// #define RENDER_BOUNDING_VOLUMES
 
 struct Triangle
 {
@@ -45,11 +45,11 @@ private:
 	std::vector<Triangle> m_faces;
 	std::string fname;
 
-	#ifdef RENDER_BOUNDING_VOLUMES
+	// #ifdef RENDER_BOUNDING_VOLUMES
 		glm::vec3 min_vec;
 		glm::vec3 max_vec;
 		Primitive *nh_box;
-	#endif
+	// #endif
 
     friend std::ostream& operator<<(std::ostream& out, const Mesh& mesh);
 };

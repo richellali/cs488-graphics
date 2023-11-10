@@ -7,6 +7,7 @@
 
 // #include "cs488-framework/ObjFileDecoder.hpp"
 #include "Mesh.hpp"
+#include <iostream>
 
 using namespace glm;
 
@@ -26,13 +27,15 @@ bool rayTriangleIntersect(
 
   // check if the ray and plane are parallel
 
-  if (abs(dot(planeNormal, dir)) < eps) {
+  if (abs(dot(planeNormal, dir)) < eps)
+  {
     return false;
   }
 
   float D = -dot(planeNormal, v0);
-  t = - (dot(planeNormal, orig) + D) / dot(planeNormal, dir);
-  if (t < 0) return false;
+  t = -(dot(planeNormal, orig) + D) / dot(planeNormal, dir);
+  if (t < 0)
+    return false;
 
   vec3 p = orig + t * dir;
 
@@ -42,17 +45,20 @@ bool rayTriangleIntersect(
   vec3 edge0 = v1 - v0;
   vec3 vp0 = p - v0;
   C = cross(edge0, vp0);
-  if (dot(planeNormal, C) < 0) return false;
+  if (dot(planeNormal, C) < 0)
+    return false;
 
   vec3 edge1 = v2 - v1;
   vec3 vp1 = p - v1;
   C = cross(edge1, vp1);
-  if (dot(planeNormal, C) < 0) return false;
+  if (dot(planeNormal, C) < 0)
+    return false;
 
   vec3 edge2 = v0 - v2;
   vec3 vp2 = p - v2;
   C = cross(edge2, vp2);
-  if (dot(planeNormal, C) < 0) return false;
+  if (dot(planeNormal, C) < 0)
+    return false;
 
   return true;
 }
@@ -71,15 +77,17 @@ Mesh::Mesh(const std::string &fname)
     {
       ifs >> vx >> vy >> vz;
       m_vertices.push_back(glm::vec3(vx, vy, vz));
-      #ifdef RENDER_BOUNDING_VOLUMES
+      
+      // #ifdef RENDER_BOUNDING_VOLUMES
       min_vec.x = min(vx, (double)min_vec.x);
-      min_vec.y = min(vx, (double)min_vec.y);
-      min_vec.z = min(vx, (double)min_vec.z);
+      min_vec.y = min(vy, (double)min_vec.y);
+      min_vec.z = min(vz, (double)min_vec.z);
 
-		  max_vec.x = max(vx, (double)max_vec.x);
-      max_vec.y = max(vx, (double)max_vec.y);
-      max_vec.z = max(vx, (double)max_vec.z);
-	    #endif
+      max_vec.x = max(vx, (double)max_vec.x);
+      max_vec.y = max(vy, (double)max_vec.y);
+      max_vec.z = max(vz, (double)max_vec.z);
+      // std::cout << vy << " " << max_vec.y << std::endl;
+      // #endif
     }
     else if (code == "f")
     {
@@ -88,7 +96,10 @@ Mesh::Mesh(const std::string &fname)
     }
   }
   // #ifdef RENDER_BOUNDING_VOLUMES
+  // std::cout << to_string(max_vec) << " " << to_string(min_vec) << std::endl;
+
   vec3 temp = max_vec - min_vec;
+  // std::cout << to_string(temp) << std::endl;
   double max_sz = max(max(temp.x, temp.y), temp.z);
   nh_box = new NonhierBox(min_vec, max_sz);
   // #endif
@@ -122,9 +133,10 @@ Mesh::Mesh(const glm::vec3 &m_pos, double m_size)
 
 Mesh::~Mesh()
 {
-    // #ifdef RENDER_BOUNDING_VOLUMES
-    if (nh_box) delete nh_box;
-    // #endif
+  // #ifdef RENDER_BOUNDING_VOLUMES
+  if (nh_box)
+    delete nh_box;
+  // #endif
 }
 
 std::ostream &operator<<(std::ostream &out, const Mesh &mesh)
@@ -148,11 +160,13 @@ std::ostream &operator<<(std::ostream &out, const Mesh &mesh)
   return out;
 }
 
-void Mesh::get_uv(HitRecord &rec) {
-  if (fname == "plane.obj") {
-    
-    rec.u = (rec.p.x + 1)/ 2;
-    rec.v = (rec.p.z + 1)/ 2;
+void Mesh::get_uv(HitRecord &rec)
+{
+  if (fname == "plane.obj")
+  {
+
+    rec.u = (rec.p.x + 1) / 2;
+    rec.v = (rec.p.z + 1) / 2;
     // std::cout << rec.u << " " << rec.v << std::endl;
   }
 }
@@ -164,18 +178,21 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
 
   vec3 normal;
 
-  #ifdef RENDER_BOUNDING_VOLUMES
-  
-   if (nh_box && !nh_box->intersected(ray, tmin, tmax, rec)) {
-    return nh_box->intersected(ray, tmin, tmax, rec);
-  } 
-  #endif
-
+#ifdef RENDER_BOUNDING_VOLUMES
+  if (nh_box && !nh_box->intersected(ray, tmin, tmax, rec))
+  {
+    return false;
+  } else if (nh_box) {
+    return true;
+  }
+#else
   HitRecord temp;
   temp.t = std::numeric_limits<float>::max();
-  if (nh_box && !nh_box->intersected(ray, tmin, tmax, temp)) {
+  if (nh_box && !nh_box->intersected(ray, tmin, tmax, temp))
+  {
     return isIntersected;
-  } 
+  }
+#endif
 
   for (Triangle triangle : m_faces)
   {
@@ -188,17 +205,18 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
       tClosest = t;
       isIntersected = true;
 
-      normal = cross(m_vertices[triangle.v2]-m_vertices[triangle.v1], m_vertices[triangle.v3]-m_vertices[triangle.v1]);
+      normal = cross(m_vertices[triangle.v2] - m_vertices[triangle.v1], m_vertices[triangle.v3] - m_vertices[triangle.v1]);
     }
   }
 
-  if (isIntersected) {
+  if (isIntersected)
+  {
     rec.t = tClosest;
     rec.p = ray.at(rec.t);
     rec.normal = normal;
 
     get_uv(rec);
   }
-  
+
   return isIntersected;
 }

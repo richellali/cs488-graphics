@@ -1,2 +1,27 @@
+COMPILATION:
+premake4 gmake
+make
+./A4 Assets/$FILE.lua
 
+INSTRUCTION:
+- EXTRA FEATURE:
+  - I implemented texture mapping for spheres, cubes and planes, it can be
+    found in my unique scene
+  - Unique Scene: unique_scene.lua. I have also attached a png file of the
+    unique scene in the Assets folder, which has a name of unique_scene.png
+    - The scene is about a farm in a dry land. There is a meteor in the center
+      of the scene.
 - nonhier2.lua outputs nonhier2.png
+- nonhier.lua outputs nonhier-bb.png
+- macho-cows outputs macho-cows-bb.png
+- Sample images in the Assets folder are:
+  - unique_scene.png
+  - simple.png
+  - simple-cows.png
+  - macho-cows.png
+  - macho-cows-bb.png
+  - real-macho-cows-newview.png
+  - hier.png
+  - nonhier.png
+  - nonhier-bb.png
+  - nonhier2.png
