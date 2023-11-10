@@ -33,7 +33,7 @@ struct Triangle
 class Mesh : public Primitive {
 public:
   Mesh(const std::string& fname );
-  Mesh(const glm::vec3 &m_pos, double m_size);
+  Mesh(const glm::vec3 &m_pos, glm::vec3 &m_size);
 
   virtual ~Mesh();
 

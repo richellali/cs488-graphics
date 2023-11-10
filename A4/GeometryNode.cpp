@@ -50,14 +50,17 @@ void GeometryNode::setTexture( Texture *texture )
 }
 
 bool GeometryNode::intersected(Ray &ray, float tmin, HitRecord &rec) {
+	// std::cout << "Geometry " <<  m_name << std::endl;
 	HitRecord tempRec;
 
 	vec4 transOrig = invtrans * vec4(ray.getOrigin(), 1.0);
 	vec4 transDir = invtrans * vec4(ray.getDirection(), 0.0);
 	Ray transRay = Ray(vec3(transOrig.x, transOrig.y, transOrig.z),
 	vec3(transDir.x, transDir.y, transDir.z));
+	// if (m_primitive == nullptr) std::cout << "no" << std::endl;
 
 	bool isIntersected = m_primitive->intersected(transRay, tmin, rec.t, tempRec);
+	// std::cout << "Geometry back" << std::endl;
 
 	if (isIntersected) {
 		rec.t = tempRec.t;

@@ -50,6 +50,7 @@ private:
 class NonhierBox : public Primitive {
 public:
   NonhierBox(const glm::vec3& pos, double size);
+  NonhierBox(const glm::vec3& pos, glm::vec3 &size);
   
   virtual ~NonhierBox();
   bool intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) override;
@@ -57,6 +58,7 @@ public:
 
 private:
   glm::vec3 m_pos;
+  glm::vec3 rec_size;
   Primitive *m_mesh;
   double m_size;
 };

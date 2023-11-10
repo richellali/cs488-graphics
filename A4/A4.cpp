@@ -14,13 +14,12 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 & ambient,
 
 	HitRecord rec;
 	rec.t = std::numeric_limits<float>::max();
-
+	rec.texture = nullptr;
 	if (root->intersected(ray, 0.00001f, rec)){
 		// get colour of the closet object
 		PhongMaterial *material = static_cast<PhongMaterial *>(rec.material);
 
 		if (!(rec.texture || material)) goto noIntersection;
-
 		vec3 kd = rec.texture ? rec.texture->colour(rec.u, rec.v) : material->kd();
 		vec3 ks = rec.texture ? rec.texture->colour(rec.u, rec.v) : material->ks();
 

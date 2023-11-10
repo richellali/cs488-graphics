@@ -88,7 +88,13 @@ bool NonhierSphere::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec
 }
 
 NonhierBox::NonhierBox(const glm::vec3& pos, double size)
-    : m_pos(pos), m_size(size)
+    : m_pos(pos), m_size(size), rec_size(vec3(size, size, size))
+  {
+    m_mesh = new Mesh(pos, rec_size);
+  }
+
+  NonhierBox::NonhierBox(const glm::vec3& pos, glm::vec3 &size)
+    : m_pos(pos), m_size(1.0), rec_size(size)
   {
     m_mesh = new Mesh(pos, size);
   }

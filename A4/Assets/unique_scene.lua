@@ -126,7 +126,7 @@ scene:add_child(an_arc)
 an_arc:add_child(arc)
 
 gr.render(scene,
-	  'unique_scene.png', 512, 512,
+	  'unique_scene.png', 1024, 1024,
 	  {0, 2, 30}, {0, 0, -1}, {0, 1, 0}, 50,
 	  {0.4, 0.4, 0.4}, {gr.light( {200, 202, -100}, {0.8, 0.7, 0.4}, {1, 0, 0})})
 -- {200, 202, -100},

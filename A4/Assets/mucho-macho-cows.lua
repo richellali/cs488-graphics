@@ -107,6 +107,6 @@ lights = {gr.light({10, 5, 25}, {0.8, 0.8, 0.8}, {1, 0, 0.0005})}
 imSize = 512
 --{200, 202, 430}
 gr.render(scene,
-	  'real-macho-cows-newview.png', imSize, imSize,
+	  'real-macho-cows-newview-test.png', imSize, imSize,
 	  {20.8, 2, 21}, {-1.1, -0.1, -1}, {0, 1, 0.5}, 50,
 	  {0.4, 0.4, 0.4}, lights)

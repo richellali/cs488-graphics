@@ -16,6 +16,8 @@ using namespace std;
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/ext.hpp>
 
+#include <algorithm>
+
 using namespace glm;
 
 static bool show_gui = true;
@@ -916,7 +918,7 @@ void A3::selectOrDisselectJoints(unsigned int nodeId, SceneNode &node)
 				}
 				else
 				{
-					auto it = find(selectedJoints.begin(), selectedJoints.end(), &node);
+					auto it = std::find(selectedJoints.begin(), selectedJoints.end(), &node);
 					if (it != selectedJoints.end())
 					{
 						selectedJoints.erase(it);

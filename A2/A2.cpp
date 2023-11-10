@@ -529,24 +529,23 @@ void A2::perspective(double x_mov)
 void A2::initView()
 {
 
-	glm::vec3 lookat(0.0f, 0.0f, -1.0f);
-	glm::vec3 cam_pos(0.0f, 0.0f, 5.0f);
-	glm::vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 lookat(0.0f, 0.0f, -1.0f);
+	vec3 cam_pos(0.0f, 0.0f, 10.0f);
+	vec3 up(0.0f, 1.0f, 0.0f);
 
-	glm::vec3 z((lookat - cam_pos) / glm::distance(lookat, cam_pos)); // using pts to get normalized
-	glm::vec3 x(glm::cross(z, up) / glm::distance(glm::cross(z, up), glm::vec3(0.0f)));
-	glm::vec3 y(glm::cross(x, z));
+	vec3 z((lookat - cam_pos) / distance(lookat, cam_pos)); // using pts to get normalized
+	vec3 x(cross(z, up) / distance(cross(z, up), vec3(0.0f)));
+	vec3 y(cross(x, z));
 
-	glm::mat4 R{
+	mat4 R{
 		vec4(x, 0),
 		vec4(y, 0),
 		vec4(z, 0),
 		vec4(0.0f, 0.0f, 0.0f, 1.0f),
 	};
-
 	R = transpose(R);
 
-	glm::mat4 T(1.0f);
+	mat4 T(1.0f);
 	T[3].z = -cam_pos.z;
 	model_to_view = R * T;
 }
@@ -554,7 +553,7 @@ void A2::initView()
 void A2::initProj()
 {
 	float aspect = m_windowWidth / m_windowHeight;
-	float cot_fov = cos(radians(fov)) / sin(radians(fov));
+	float cot_fov = cos(radians(fov/2)) / sin(radians(fov/2));
 
 	proj = transpose(mat4{
 		cot_fov / aspect,
@@ -974,7 +973,10 @@ bool A2::mouseButtonInputEvent(
 		{
 			axis.z = false;
 		}
-		m_mouseButtonActive = false;
+		if (!(axis.x || axis.y || axis.z)) {
+			m_mouseButtonActive = false;
+		}
+		
 		eventHandled = true;
 	}
 

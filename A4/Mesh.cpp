@@ -100,13 +100,13 @@ Mesh::Mesh(const std::string &fname)
 
   vec3 temp = max_vec - min_vec;
   // std::cout << to_string(temp) << std::endl;
-  double max_sz = max(max(temp.x, temp.y), temp.z);
-  nh_box = new NonhierBox(min_vec, max_sz);
+  // double max_sz = max(max(temp.x, temp.y), temp.z);
+  nh_box = new NonhierBox(min_vec, temp);
   // #endif
 }
 
-Mesh::Mesh(const glm::vec3 &m_pos, double m_size)
-    : m_vertices(), m_faces(), fname("cube.obj")
+Mesh::Mesh(const glm::vec3 &m_pos, vec3 &m_size)
+    : m_vertices(), m_faces(), fname("cube.obj"), nh_box(nullptr)
 {
   std::string code;
   double vx, vy, vz;
@@ -118,8 +118,8 @@ Mesh::Mesh(const glm::vec3 &m_pos, double m_size)
     if (code == "v")
     {
       ifs >> vx >> vy >> vz;
-      glm::vec3 vec = glm::vec3(vx, vy, vz);
-      vec *= m_size;
+      
+      glm::vec3 vec = glm::vec3(vx * m_size.x, vy * m_size.y, vz * m_size.z);
       vec += m_pos;
       m_vertices.push_back(vec);
     }
@@ -188,6 +188,7 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
 #else
   HitRecord temp;
   temp.t = std::numeric_limits<float>::max();
+
   if (nh_box && !nh_box->intersected(ray, tmin, tmax, temp))
   {
     return isIntersected;
@@ -197,7 +198,7 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
   for (Triangle triangle : m_faces)
   {
     float t;
-
+  
     if (rayTriangleIntersect(ray.getOrigin(), ray.getDirection(),
                              m_vertices[triangle.v1], m_vertices[triangle.v2], m_vertices[triangle.v3], t) &&
         t < tClosest && t > tmin)
@@ -207,6 +208,7 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
 
       normal = cross(m_vertices[triangle.v2] - m_vertices[triangle.v1], m_vertices[triangle.v3] - m_vertices[triangle.v1]);
     }
+  
   }
 
   if (isIntersected)

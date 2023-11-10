@@ -61,7 +61,7 @@ leftUpperArm:scale(0.3, 1.0, 0.3)
 leftUpperArm:translate(0.0, -1.0, 0.0)
 leftUpperArm:set_material(white)
 
-leftUpperForearmJoint = gr.joint('leftUpperForearm', {-60, 0, 60}, {0, 0, 0})
+leftUpperForearmJoint = gr.joint('leftUpperForearm', {-70, 0, 0}, {0, 0, 0})
 leftUpperArmJoint:add_child(leftUpperForearmJoint)
 leftUpperForearmJoint:translate(0.0, -1.9, 0.0)
 
@@ -94,7 +94,7 @@ rightUpperArm:scale(0.3, 1.0, 0.3)
 rightUpperArm:translate(0.0, -1.0, 0.0)
 rightUpperArm:set_material(white)
 
-rightUpperForearmJoint = gr.joint('rightUpperForearm', {-60, 0, 60}, {0, 0, 0})
+rightUpperForearmJoint = gr.joint('rightUpperForearm', {-70, 0, 0}, {0, 0, 0})
 rightUpperArmJoint:add_child(rightUpperForearmJoint)
 rightUpperForearmJoint:translate(0.0, -1.9, 0.0)
 
@@ -136,7 +136,7 @@ leftThigh:scale(0.4, 1.2, 0.4)
 leftThigh:translate(0.0, -1.2, 0.0)
 leftThigh:set_material(white)
 
-leftThighCalfJoint = gr.joint('leftThighCalfJoint', {0, 0, 45}, {0, 0, 0})
+leftThighCalfJoint = gr.joint('leftThighCalfJoint', {0, 0, 70}, {0, 0, 0})
 leftHipThighJoint:add_child(leftThighCalfJoint)
 leftThighCalfJoint:translate(0.0, -2.3, 0.0)
 
@@ -168,7 +168,7 @@ rightThigh:scale(0.4, 1.2, 0.4)
 rightThigh:translate(0.0, -1.2, 0.0)
 rightThigh:set_material(white)
 
-rightThighCalfJoint = gr.joint('rightThighCalfJoint', {0, 0, 45}, {0, 0, 0})
+rightThighCalfJoint = gr.joint('rightThighCalfJoint', {0, 0, 70}, {0, 0, 0})
 rightHipThighJoint:add_child(rightThighCalfJoint)
 rightThighCalfJoint:translate(0.0, -2.3, 0.0)
 

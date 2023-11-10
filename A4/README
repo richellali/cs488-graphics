@@ -4,6 +4,7 @@ make
 ./A4 Assets/$FILE.lua
 
 INSTRUCTION:
+- BOUNDING_BOX is disabled by default
 - EXTRA FEATURE:
   - I implemented texture mapping for spheres, cubes and planes, it can be
     found in my unique scene
@@ -12,10 +13,13 @@ INSTRUCTION:
     - The scene is about a farm in a dry land. There is a meteor in the center
       of the scene.
 - Bounding Box:
-  - I used cube to make bounding box.
-- nonhier2.lua outputs nonhier2.png
-- nonhier.lua outputs nonhier-bb.png
-- macho-cows outputs macho-cows-bb.png
+  - I used rectangles to make bounding box.
+- Resolution:
+  - I changed all resolutions to 1024
+- Outputs: 
+  - nonhier2.lua outputs nonhier2.png
+  - nonhier.lua outputs nonhier-bb.png
+  - macho-cows outputs macho-cows-bb.png
 - Sample images in the Assets folder are:
   - unique_scene.png
   - simple.png

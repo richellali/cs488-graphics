@@ -50,8 +50,8 @@ A1::A1()
 	block_col[1] = 0.2f;
 	block_col[2] = 0.4f;
 
-	floor_col[0] = 0.3f;
-	floor_col[1] = 0.5f;
+	floor_col[0] = 0.4f;
+	floor_col[1] = 0.7f;
 	floor_col[2] = 0.7f;
 
 	avatar_col[0] = 1.0f;
@@ -378,8 +378,8 @@ void A1::reset()
 	block_col[1] = 0.2f;
 	block_col[2] = 0.4f;
 
-	floor_col[0] = 0.3f;
-	floor_col[1] = 0.5f;
+	floor_col[0] = 0.4f;
+	floor_col[1] = 0.7f;
 	floor_col[2] = 0.7f;
 
 	avatar_col[0] = 1.0f;
@@ -399,6 +399,7 @@ void A1::reset()
 
 	// maze
 	block_size = 1;
+	m.reset();
 	maze_digged = false;
 
 	// avatar
