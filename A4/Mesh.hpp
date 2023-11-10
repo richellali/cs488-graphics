@@ -5,6 +5,7 @@
 #include <vector>
 #include <iosfwd>
 #include <string>
+#include "HitRecord.hpp"
 
 #include <glm/glm.hpp>
 
@@ -37,6 +38,7 @@ public:
   virtual ~Mesh();
 
   bool intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) override;
+  void get_uv(HitRecord &rec);
   
 private:
 	std::vector<glm::vec3> m_vertices;

@@ -148,6 +148,15 @@ std::ostream &operator<<(std::ostream &out, const Mesh &mesh)
   return out;
 }
 
+void Mesh::get_uv(HitRecord &rec) {
+  if (fname == "plane.obj") {
+    
+    rec.u = (rec.p.x + 1)/ 2;
+    rec.v = (rec.p.z + 1)/ 2;
+    // std::cout << rec.u << " " << rec.v << std::endl;
+  }
+}
+
 bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
 {
   bool isIntersected = false;
@@ -182,6 +191,8 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
     rec.t = tClosest;
     rec.p = ray.at(rec.t);
     rec.normal = normal;
+
+    get_uv(rec);
   }
   
   return isIntersected;

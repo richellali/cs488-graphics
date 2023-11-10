@@ -19,6 +19,8 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 & ambient,
 		// get colour of the closet object
 		PhongMaterial *material = static_cast<PhongMaterial *>(rec.material);
 
+		if (!(rec.texture || material)) goto noIntersection;
+
 		vec3 kd = rec.texture ? rec.texture->colour(rec.u, rec.v) : material->kd();
 		vec3 ks = rec.texture ? rec.texture->colour(rec.u, rec.v) : material->ks();
 
@@ -57,8 +59,10 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 & ambient,
 			
 			colour += light->colour * (kd + ks * vDotRPow / nDotL) * nDotL / attenuation;
 		}
-		
-	} else {
+		return colour;
+	} 
+	noIntersection:
+	{
 		// use ray direction 
 		vec3 direc = normalize(ray.getDirection());
 		// up blue down orange
@@ -119,7 +123,6 @@ void A4_Render(
 	// get the vector pointing to bottom left corner of the screen
 	vec3 bot_left_direction = z * d_norm - x * (w/2) - y * (h/2);
 
-	std::cout << to_string(bot_left_direction) <<std::endl;
 	// colouring every pixel in the screen
 	for (uint j=0; j<h; j++){
 		for (uint i=0; i<w; i++){

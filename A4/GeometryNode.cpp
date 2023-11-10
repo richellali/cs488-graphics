@@ -46,7 +46,6 @@ void GeometryNode::setTexture( Texture *texture )
 	//     throw away all your data.  A memory leak won't build up and
 	//     crash the program.
 
-	std::cout << texture->fname << std::endl;
 	m_texture = texture;
 }
 
