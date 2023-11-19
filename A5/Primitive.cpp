@@ -212,8 +212,8 @@ bool NonhierCone::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) 
 
     double A = ray.getDirection().x * ray.getDirection().x + ray.getDirection().y * ray.getDirection().y
             - ray.getDirection().z * ray.getDirection().z / r_sq;
-    double B = 2 * (ray.getDirection().x*center_vec.x + ray.getDirection().y*center_vec.y)
-            - ray.getDirection().z*center_vec.z / r_sq;
+    double B = 2 * (ray.getDirection().x*center_vec.x + ray.getDirection().y*center_vec.y
+            - ray.getDirection().z*center_vec.z / r_sq);
     double C = center_vec.x*center_vec.x + center_vec.y*center_vec.y - center_vec.z*center_vec.z/r_sq; 
 
     double roots[2];
@@ -246,8 +246,11 @@ bool NonhierCone::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) 
     if (tmin <= t && t <= tmax) {
         rec.t = t;
         rec.p = ray.at(t);
+
         vec3 va = vec3(0, 0, 1);
-        rec.normal = (rec.p - m_pos) - dot(va, rec.p-m_pos) * va;
+        vec3 m = (rec.p - m_pos) - dot(va, rec.p-m_pos) * va;
+        double alpha = atan2(m_radius, m_height);
+        rec.normal = cos(alpha)*m + sin(alpha)*va;
 
         isIntersected = true;
     }
@@ -257,11 +260,11 @@ bool NonhierCone::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) 
     double cap_x = center_vec.x + cap_t * ray.getDirection().x;
     double cap_y = center_vec.y + cap_t * ray.getDirection().y;
 
-    if (cap_x * cap_x + cap_y * cap_y <= m_radius * m_radius && (tmin <= cap_t) && (cap_t <= tmax)) {
+    if (cap_x * cap_x + cap_y * cap_y <= zmax*zmax/r_sq && (tmin <= cap_t) && (cap_t <= tmax)) {
         if (!(isIntersected && cap_t > rec.t)) {
             rec.t = cap_t;
             rec.p = ray.at(cap_t);
-            rec.normal = vec3(0, 0, -1);
+            rec.normal = vec3(0, 0, 1);
             isIntersected = true;
         } 
         
