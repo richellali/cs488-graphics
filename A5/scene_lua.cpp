@@ -265,6 +265,30 @@ extern "C" int gr_nh_cylinder_cmd(lua_State *L)
   return 1;
 }
 
+extern "C" int gr_nh_cone_cmd(lua_State *L)
+{
+  GRLUA_DEBUG_CALL;
+
+  gr_node_ud *data = (gr_node_ud *)lua_newuserdata(L, sizeof(gr_node_ud));
+  data->node = 0;
+
+  const char *name = luaL_checkstring(L, 1);
+
+  glm::vec3 pos;
+  get_tuple(L, 2, &pos[0], 3);
+
+  double radius = luaL_checknumber(L, 3);
+
+  double height = luaL_checknumber(L, 4);
+
+  data->node = new GeometryNode(name, new NonhierCone(pos, radius, height));
+
+  luaL_getmetatable(L, "gr.node");
+  lua_setmetatable(L, -2);
+
+  return 1;
+}
+
 // Create a non-hierarchical Box node
 extern "C" int gr_nh_box_cmd(lua_State *L)
 {
@@ -625,6 +649,7 @@ static const luaL_Reg grlib_functions[] = {
     {"texture", gr_texture_cmd},
     // New for assignment 5
     {"nh_cylinder", gr_nh_cylinder_cmd},
+    {"nh_cone", gr_nh_cone_cmd},
     {0, 0}};
 
 // This is where all the member functions for "gr.node" objects are

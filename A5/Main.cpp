@@ -3,6 +3,8 @@
 #include <iostream>
 #include "scene_lua.hpp"
 
+std::string LUA_DIR = "lua/";
+
 int main(int argc, char** argv)
 {
   std::string filename = "simple.lua";
@@ -10,7 +12,7 @@ int main(int argc, char** argv)
     filename = argv[1];
   }
 
-  if (!run_lua(filename)) {
+  if (!run_lua(LUA_DIR+filename)) {
     std::cerr << "Could not open " << filename <<
                  ". Try running the executable from inside of" <<
                  " the Assets/ directory" << std::endl;

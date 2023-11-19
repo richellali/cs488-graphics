@@ -202,3 +202,70 @@ bool NonhierCylinder::intersected(Ray &ray, float tmin, float tmax, HitRecord &r
 
     return isIntersected;
 }
+
+bool NonhierCone::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
+    bool isIntersected = false;
+
+    vec3 center_vec = ray.getOrigin() - m_pos;
+
+    double r_sq = m_radius * m_radius;
+
+    double A = ray.getDirection().x * ray.getDirection().x + ray.getDirection().y * ray.getDirection().y
+            - ray.getDirection().z * ray.getDirection().z / r_sq;
+    double B = 2 * (ray.getDirection().x*center_vec.x + ray.getDirection().y*center_vec.y)
+            - ray.getDirection().z*center_vec.z / r_sq;
+    double C = center_vec.x*center_vec.x + center_vec.y*center_vec.y - center_vec.z*center_vec.z/r_sq; 
+
+    double roots[2];
+
+    size_t numRoots = quadraticRoots(A, B, C, roots);
+
+    double t = -1;
+
+    double zmin = 0;
+    double zmax = m_height;
+
+     if (numRoots == 1) {
+        double z = center_vec.z + roots[0] * ray.getDirection().z;
+        if (zmin < z && z < zmax) {
+            t = roots[0];
+        }
+    } else if (numRoots == 2) {
+        double z1 = center_vec.z + roots[0] * ray.getDirection().z;
+        double z2 = center_vec.z + roots[1] * ray.getDirection().z;
+
+        if ((zmin  < z1 && z1 < zmax) && (zmin < z2 && z2 < zmax)) {
+            t = min(roots[0], roots[1]);
+        } else if (zmin  < z1 && z1 < zmax) {
+            t = roots[0];
+        } else if (zmin < z2 && z2 < zmax) {
+            t = roots[1];
+        }
+    }
+
+    if (tmin <= t && t <= tmax) {
+        rec.t = t;
+        rec.p = ray.at(t);
+        vec3 va = vec3(0, 0, 1);
+        rec.normal = (rec.p - m_pos) - dot(va, rec.p-m_pos) * va;
+
+        isIntersected = true;
+    }
+
+    // upper cap
+    double cap_t = (zmax - center_vec.z) / ray.getDirection().z;
+    double cap_x = center_vec.x + cap_t * ray.getDirection().x;
+    double cap_y = center_vec.y + cap_t * ray.getDirection().y;
+
+    if (cap_x * cap_x + cap_y * cap_y <= m_radius * m_radius && (tmin <= cap_t) && (cap_t <= tmax)) {
+        if (!(isIntersected && cap_t > rec.t)) {
+            rec.t = cap_t;
+            rec.p = ray.at(cap_t);
+            rec.normal = vec3(0, 0, -1);
+            isIntersected = true;
+        } 
+        
+    }
+
+    return isIntersected;
+}

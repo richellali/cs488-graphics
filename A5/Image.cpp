@@ -6,6 +6,8 @@
 #include <cstring>
 #include <lodepng/lodepng.h>
 
+std::string OUT_DIR = "outputs/";
+
 const uint Image::m_colorComponents = 3; // Red, blue, green
 
 //---------------------------------------------------------------------------------------
@@ -115,7 +117,7 @@ bool Image::savePng(const std::string & filename) const
 	}
 
 	// Encode the image
-	unsigned error = lodepng::encode(filename, image, m_width, m_height, LCT_RGB);
+	unsigned error = lodepng::encode(OUT_DIR+filename, image, m_width, m_height, LCT_RGB);
 
 	if(error) {
 		std::cerr << "encoder error " << error << ": " << lodepng_error_text(error)

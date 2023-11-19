@@ -3,15 +3,15 @@
 
 #include <iostream>
 
+std::string TEXTURE_DIR = "texture/";
+
 using namespace glm;
 
 Texture::Texture(const std::string &fname)
 : fname(fname)
 {
-    // std::cout << "hey file " << fname << std::endl;
-
     // Decode the image
-    unsigned error = lodepng::decode(image, m_width, m_height, fname, LCT_RGB);
+    unsigned error = lodepng::decode(image, m_width, m_height, TEXTURE_DIR+fname, LCT_RGB);
 
     if (error)
     {

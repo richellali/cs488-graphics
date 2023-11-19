@@ -9,6 +9,8 @@
 #include "Mesh.hpp"
 #include <iostream>
 
+std::string OBJ_DIR = "obj/";
+
 using namespace glm;
 
 // source: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/
@@ -70,7 +72,7 @@ Mesh::Mesh(const std::string &fname)
   double vx, vy, vz;
   size_t s1, s2, s3;
 
-  std::ifstream ifs(fname.c_str());
+  std::ifstream ifs((OBJ_DIR+fname).c_str());
   while (ifs >> code)
   {
     if (code == "v")
@@ -112,7 +114,7 @@ Mesh::Mesh(const glm::vec3 &m_pos, vec3 &m_size)
   double vx, vy, vz;
   size_t s1, s2, s3;
 
-  std::ifstream ifs(fname.c_str());
+  std::ifstream ifs((OBJ_DIR+fname).c_str());
   while (ifs >> code)
   {
     if (code == "v")

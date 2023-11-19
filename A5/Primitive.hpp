@@ -62,3 +62,33 @@ private:
   Primitive *m_mesh;
   double m_size;
 };
+
+class NonhierCylinder : public Primitive {
+  public: 
+  NonhierCylinder(const glm::vec3& pos, double radius, double height)
+    : m_pos(pos), m_radius(radius), m_height(height)
+    {
+    }
+
+  bool intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) override;
+
+  private:
+  glm::vec3 m_pos;
+  double m_radius;
+  double m_height;
+};
+
+class NonhierCone : public Primitive {
+  public: 
+  NonhierCone(const glm::vec3& pos, double radius, double height)
+    : m_pos(pos), m_radius(radius), m_height(height)
+    {
+    }
+
+  bool intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) override;
+
+  private:
+  glm::vec3 m_pos;
+  double m_radius;
+  double m_height;
+};
