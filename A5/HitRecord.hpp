@@ -15,7 +15,4 @@ class HitRecord {
     double u;
     double v;
     Texture *texture;
-
-    // Refraction
-    bool front_face=false;
 };

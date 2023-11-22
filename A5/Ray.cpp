@@ -5,11 +5,19 @@ using namespace glm;
 Ray::Ray() {
     origin = vec3(0.0f);
     direction = vec3(0.0f);
+    front_face = true;
 }
 
 Ray::Ray(const vec3 ori, const vec3 dir)
 : origin(ori),
-  direction(dir)
+  direction(dir),
+  front_face(true)
+  {}
+
+Ray::Ray(const vec3 ori, const vec3 dir, bool front_face)
+: origin(ori),
+  direction(dir),
+  front_face(front_face)
   {}
 
 vec3 Ray::getOrigin() const {

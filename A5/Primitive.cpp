@@ -8,6 +8,16 @@
 
 using namespace glm;
 
+float min_but_greater_than_tmin(float tmin, float t1, float t2) {
+    if (t1 > tmin && t2 > tmin) {
+        return min(t1, t2);
+    } else if (t1 > tmin) {
+        return t1;
+    } else {
+        return t2;
+    }
+}
+
 Primitive::~Primitive()
 {
 }
@@ -74,15 +84,16 @@ bool NonhierSphere::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec
     } else if (numRoots == 1) {
         t = roots[0];
     } else {
-        t = min(roots[0], roots[1]);
+        t = min_but_greater_than_tmin(tmin, roots[0], roots[1]);
     }
 
-    if (t < tmin || t > tmax) return false;
+    // if (t < tmin || t > tmax) return false;
 
     rec.t = t;
     rec.p = ray.at(t);
     rec.normal = rec.p - m_pos;
     get_uv(rec);
+    if (t < tmin || t > tmax) return false;
 
     return true;
 
@@ -153,7 +164,7 @@ bool NonhierCylinder::intersected(Ray &ray, float tmin, float tmax, HitRecord &r
         double z2 = center_vec.z + roots[1] * ray.getDirection().z;
 
         if ((zmin  < z1 && z1 < zmax) && (zmin < z2 && z2 < zmax)) {
-            t = min(roots[0], roots[1]);
+            t = min_but_greater_than_tmin(tmin, roots[0], roots[1]);
         } else if (zmin  < z1 && z1 < zmax) {
             t = roots[0];
         } else if (zmin < z2 && z2 < zmax) {
@@ -235,7 +246,7 @@ bool NonhierCone::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) 
         double z2 = center_vec.z + roots[1] * ray.getDirection().z;
 
         if ((zmin  < z1 && z1 < zmax) && (zmin < z2 && z2 < zmax)) {
-            t = min(roots[0], roots[1]);
+            t = min_but_greater_than_tmin(tmin, roots[0], roots[1]);
         } else if (zmin  < z1 && z1 < zmax) {
             t = roots[0];
         } else if (zmin < z2 && z2 < zmax) {

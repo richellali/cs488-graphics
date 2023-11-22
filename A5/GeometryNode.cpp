@@ -61,12 +61,14 @@ bool GeometryNode::intersected(Ray &ray, float tmin, HitRecord &rec) {
 
 	bool isIntersected = m_primitive->intersected(transRay, tmin, rec.t, tempRec);
 	// std::cout << "Geometry back" << std::endl;
+	// if (m_name == "s2") std::cout << "hit " << tempRec.t << std::endl;
 
 	if (isIntersected) {
 		rec.t = tempRec.t;
 		rec.p = tempRec.p;
 		rec.normal = tempRec.normal;
 		rec.material = m_material;
+		// std::cout << "Geometry hit" <<  m_name << std::endl;
 
 		rec.u = tempRec.u;
 		rec.v = tempRec.v;

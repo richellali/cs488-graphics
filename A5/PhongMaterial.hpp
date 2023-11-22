@@ -13,6 +13,7 @@ class PhongMaterial : public Material {
 public:
   PhongMaterial(const glm::vec3& kd, const glm::vec3& ks, double shininess);
   virtual bool scatter(Ray &ray, HitRecord &rec, Ray &out_ray, double &attenuation);
+  virtual bool isRefracted();
   virtual ~PhongMaterial();
   
 
@@ -44,6 +45,7 @@ class DielectricMaterial : public PhongMaterial {
   public:
   DielectricMaterial(const glm::vec3& kd, const glm::vec3& ks, double shininess, double refractive_index);
   bool scatter(Ray &ray, HitRecord &rec, Ray &out_ray, double &attenuation) override;
+  bool isRefracted() override;
 
   private:
   double refractive_index;

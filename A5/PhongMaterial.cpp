@@ -18,6 +18,9 @@ PhongMaterial::PhongMaterial(
 PhongMaterial::~PhongMaterial()
 {
 }
+bool PhongMaterial::isRefracted(){
+	return false;
+}
 
 bool PhongMaterial::scatter(Ray &ray, HitRecord &rec, Ray &reflected_ray, double &attenuation) {
 	return false;
@@ -96,33 +99,33 @@ DielectricMaterial::DielectricMaterial(const glm::vec3 &kd, const glm::vec3 &ks,
 
 bool DielectricMaterial::scatter(Ray &ray, HitRecord &rec, Ray &out_ray, double &attenuation)
 {
-	attenuation = 0.9;
-
-	double refraction_ratio = rec.front_face ? (1.0 / refractive_index) : refractive_index;
+	float refraction_ratio = ray.front_face ? 1.0 / refractive_index : refractive_index;
 	vec3 in_ray = normalize(ray.getDirection());
-	vec3 normal = normalize(rec.normal);
+	vec3 normal = ray.front_face ? normalize(rec.normal) : -normalize(rec.normal);
 
-	// check if sin_theta > 1, if greater, cannot refract
-	double cos_theta = fmin(dot(-in_ray, normal), 1.0);
-	bool cannot_refract = refraction_ratio * sqrt(1.0 - cos_theta * cos_theta);
+	double cos_theta = dot(in_ray, normal);
 
-	// schlick Approx
-	auto r0 = (1 - refraction_ratio) / (1 + refraction_ratio);
-	r0 = r0*r0;
-	double approx = r0 + (1-r0) * pow(1-cos_theta, 5);
+	// // schlick Approx
+	// auto r0 = (1 - refraction_ratio) / (1 + refraction_ratio);
+	// r0 = r0*r0;
+	// float approx_theta = fmin(dot(-in_ray, normalize(rec.normal)), 1.0);
+	// double approx = r0 + (1-r0) * pow(1-approx_theta, 5);
 
-	vec3 out_direction;
+	float k = 1.0f - refraction_ratio * refraction_ratio * (1.0f - cos_theta * cos_theta);
 
-	if (cannot_refract || approx > random_double()) {
-		out_direction = in_ray - 2 * dot(in_ray, normal) * normal; // reflection
+	if (k <= 0) {
+		// attenuation = 0.1;
+		// vec3 out_direction = in_ray - 2 * cos_theta * normal; // reflection
+	 	// out_ray = Ray(rec.p , out_direction, ray.front_face);
+		return false;
 	} else {
-		vec3 out_perp = refraction_ratio * (in_ray + cos_theta * normal);
-		vec3 out_parallel = -sqrt(fabs(1.0 - length2(out_perp))) * normal;
-		out_direction = out_perp + out_parallel;
+		attenuation = 0.9;
+		vec3 out_direction = refraction_ratio * in_ray - (refraction_ratio * cos_theta + sqrt(k)) * normal;
+		out_ray = Ray(rec.p - normal * 0.001f, out_direction, !ray.front_face);
+		return true;
 	}
+}
 
-	out_ray = Ray(rec.p, out_direction);
-
-	rec.front_face = !rec.front_face;
+bool DielectricMaterial::isRefracted(){
 	return true;
 }

@@ -18,6 +18,11 @@ int SAMPLE_SIZE = 10;
 vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 			   const std::list<Light *> &lights, const glm::vec3 &eye, int depth)
 {
+	// std::cout << "front_face pre-intersection: " << ray.front_face << std::endl;
+
+	// std::cout << "Hit Point " << to_string(ray.getOrigin()) << std::endl;
+	// std::cout << "Out direction " << to_string(ray.getDirection()) << std::endl;
+
 	// BASE CASE
 	if (depth == 0)
 	{
@@ -31,8 +36,12 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 	rec.texture = nullptr;
 	if (root->intersected(ray, 0.00001f, rec))
 	{
+		// std::cout << "front_face: " << ray.front_face << std::endl;
 		// get colour of the closet object
 		PhongMaterial *material = static_cast<PhongMaterial *>(rec.material);
+		// material->isRefracted() 
+		// ? std::cout << "refracted" << std::endl
+		// : std::cout << "nonrefracted" << std::endl;
 
 		if (!(rec.texture || material))
 			goto noIntersection;
@@ -43,11 +52,11 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 		colour = ambient * kd;
 
 		// move hitpoint outside of the surface to avoid incorrect numerical rounding
-		rec.p += normalize(rec.normal) * 0.0001f;
+		// rec.p += normalize(rec.normal) * 0.0001f;
 
 		for (Light *light : lights)
 		{
-			Ray shadow = Ray(rec.p, light->position - rec.p);
+			Ray shadow = Ray(rec.p+normalize(rec.normal) * 0.001f, light->position - rec.p);
 			HitRecord dummyRec;
 			dummyRec.t = std::numeric_limits<float>::max();
 
@@ -78,7 +87,6 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 
 		if (material->scatter(ray, rec, out_ray, out_atten))
 		{
-			// std::cout <<"reflected "<<out_atten<<std::endl;
 			colour *= (1 - out_atten);
 			colour += out_atten * ray_trace(out_ray, root, ambient, lights, eye, depth - 1);
 		}
@@ -88,11 +96,12 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 noIntersection:
 {
 	// use ray direction
+	// std::cout << "no Intersection " << std::endl;
 	vec3 direc = normalize(ray.getDirection());
 	// up blue down orange
-	colour = (1 - direc.y) * vec3(1.0, 0.702, 0.388) + (direc.y) * vec3(0.357, 0.675, 0.831);
+	// colour = (1 - direc.y) * vec3(1.0, 0.702, 0.388) + (direc.y) * vec3(0.357, 0.675, 0.831);
 
-	// colour = (1 - direc.y) * vec3(0, 0.153, 0.878) + (direc.y) * vec3(0, 0.027, 0.161);
+	colour = (1 - direc.y) * vec3(0, 0.153, 0.878) + (direc.y) * vec3(0, 0.027, 0.161);
 }
 	return colour;
 }
@@ -111,7 +120,7 @@ void traceColorPerRow(SceneNode *root, Image *image, const glm::vec3 &eye,
 		vec3 colour;
 
 #ifdef RENDER_RECURSIVE_RAY_TRACING
-		int depth = 5;
+		int depth = 20;
 #else
 		int depth = 1;
 #endif
@@ -207,7 +216,7 @@ void A5_Render(
 									eye, j, h, w, x, y, bot_left_direction,
 									ambient, lights));
 #else
-		traceColorPerRow(root, image, eye, j, h, w, x, y, bot_left_direction,
+		traceColorPerRow(root, &image, eye, j, h, w, x, y, bot_left_direction,
 						 ambient, lights);
 #endif
 	}
