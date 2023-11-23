@@ -15,6 +15,12 @@
 using namespace glm;
 int SAMPLE_SIZE = 10;
 
+void echoProgress(int now, int total) {
+	std::cout << "\b\b\b\b\b\b\b\b";
+	std::cout << std::to_string(now * 100 / total) << "\% DONE";
+	std::cout << std::flush;
+}
+
 vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 			   const std::list<Light *> &lights, const glm::vec3 &eye, int depth)
 {
@@ -32,33 +38,25 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 	vec3 colour = vec3(0.0f);
 
 	HitRecord rec;
-	rec.t = std::numeric_limits<float>::max();
-	rec.texture = nullptr;
+	// rec.texture = nullptr;
 	if (root->intersected(ray, 0.00001f, rec))
 	{
-		// std::cout << "front_face: " << ray.front_face << std::endl;
-		// get colour of the closet object
 		PhongMaterial *material = static_cast<PhongMaterial *>(rec.material);
-		// material->isRefracted() 
-		// ? std::cout << "refracted" << std::endl
-		// : std::cout << "nonrefracted" << std::endl;
 
-		if (!(rec.texture || material))
-			goto noIntersection;
+		// if (!(rec.texture || material))
+		// 	goto noIntersection;
 
-		vec3 kd = rec.texture ? rec.texture->colour(rec.u, rec.v) : material->kd();
-		vec3 ks = rec.texture ? rec.texture->colour(rec.u, rec.v) : material->ks();
+		vec3 kd = material->kd(rec.uv.x, rec.uv.y);
+		vec3 ks = material->ks(rec.uv.x, rec.uv.y);
+
 
 		colour = ambient * kd;
-
-		// move hitpoint outside of the surface to avoid incorrect numerical rounding
-		// rec.p += normalize(rec.normal) * 0.0001f;
-
+		
 		for (Light *light : lights)
 		{
+			// move hitpoint outside of the surface to avoid incorrect numerical rounding
 			Ray shadow = Ray(rec.p+normalize(rec.normal) * 0.001f, light->position - rec.p);
 			HitRecord dummyRec;
-			dummyRec.t = std::numeric_limits<float>::max();
 
 			if (root->intersected(shadow, 0.0f, dummyRec))
 			{
@@ -84,13 +82,13 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 
 		double out_atten;
 		Ray out_ray;
-
+		// std::cout << "scatter" << std::endl;
 		if (material->scatter(ray, rec, out_ray, out_atten))
 		{
 			colour *= (1 - out_atten);
 			colour += out_atten * ray_trace(out_ray, root, ambient, lights, eye, depth - 1);
 		}
-
+		// std::cout << "scatter back" << std::endl;
 		return colour;
 	}
 noIntersection:
@@ -99,9 +97,9 @@ noIntersection:
 	// std::cout << "no Intersection " << std::endl;
 	vec3 direc = normalize(ray.getDirection());
 	// up blue down orange
-	// colour = (1 - direc.y) * vec3(1.0, 0.702, 0.388) + (direc.y) * vec3(0.357, 0.675, 0.831);
+	colour = (1 - direc.y) * vec3(1.0, 0.702, 0.388) + (direc.y) * vec3(0.357, 0.675, 0.831);
 
-	colour = (1 - direc.y) * vec3(0, 0.153, 0.878) + (direc.y) * vec3(0, 0.027, 0.161);
+	// colour = (1 - direc.y) * vec3(0, 0.153, 0.878) + (direc.y) * vec3(0, 0.027, 0.161);
 }
 	return colour;
 }
@@ -120,7 +118,7 @@ void traceColorPerRow(SceneNode *root, Image *image, const glm::vec3 &eye,
 		vec3 colour;
 
 #ifdef RENDER_RECURSIVE_RAY_TRACING
-		int depth = 20;
+		int depth = 5;
 #else
 		int depth = 1;
 #endif
@@ -207,6 +205,7 @@ void A5_Render(
 
 #ifdef RENDER_MULTITHREADING
 	std::vector<std::thread> threads;
+	uint progress = 0;
 #endif
 	// colouring every pixel in the screen
 	for (uint j = 0; j < h; j++)
@@ -225,6 +224,8 @@ void A5_Render(
 	for (auto &th : threads)
 	{
 		th.join();
+		progress++;
+		echoProgress(progress,h);
 	}
 #endif	
 }

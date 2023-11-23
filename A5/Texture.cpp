@@ -15,6 +15,7 @@ Texture::Texture(const std::string &fname)
 
     if (error)
     {
+        std::cerr << "decoder error " << fname << std::endl;
         std::cerr << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
     }
 }

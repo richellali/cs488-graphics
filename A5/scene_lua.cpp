@@ -50,16 +50,21 @@
 
 #include "Light.hpp"
 #include "Mesh.hpp"
+#include "BlenderMesh.hpp"
+#include "BlenderNode.hpp"
 #include "GeometryNode.hpp"
 #include "JointNode.hpp"
 #include "Primitive.hpp"
 #include "Material.hpp"
 #include "PhongMaterial.hpp"
+#include "MaterialLib.hpp"
 #include "A5.hpp"
 #include "Texture.hpp"
 
 typedef std::map<std::string, Mesh *> MeshMap;
+typedef std::map<std::string, BlenderMesh*> BlenderMeshMap;
 static MeshMap mesh_map;
+static BlenderMeshMap b_mesh_map;
 
 // Uncomment the following line to enable debugging messages
 // #define GRLUA_ENABLE_DEBUG
@@ -312,6 +317,44 @@ extern "C" int gr_nh_box_cmd(lua_State *L)
   return 1;
 }
 
+// Create a polygonal Blender Mesh node
+extern "C" int gr_blender_mesh_cmd(lua_State *L)
+{
+  // gr.blender_mesh(name, '.obj')
+  GRLUA_DEBUG_CALL;
+
+  gr_node_ud *data = (gr_node_ud *)lua_newuserdata(L, sizeof(gr_node_ud));
+  data->node = 0;
+
+  const char *name = luaL_checkstring(L, 1);
+  const char *obj_fname = luaL_checkstring(L, 2);
+  // const char *mtl_name = luaL_checkstring(L, 3);
+
+  std::string sfname(obj_fname);
+
+  // Use a dictionary structure to make sure every mesh is loaded
+  // at most once.
+  auto i = b_mesh_map.find(sfname);
+  BlenderMesh *b_mesh = nullptr;
+
+  if (i == b_mesh_map.end())
+  {
+    b_mesh = new BlenderMesh(obj_fname);
+    b_mesh_map[sfname] = b_mesh;
+  }
+  else
+  {
+    b_mesh = i->second;
+  }
+
+  data->node = new BlenderNode(name, b_mesh);
+
+  luaL_getmetatable(L, "gr.node");
+  lua_setmetatable(L, -2);
+
+  return 1;
+}
+
 // Create a polygonal Mesh node
 extern "C" int gr_mesh_cmd(lua_State *L)
 {
@@ -434,28 +477,41 @@ extern "C" int gr_material_cmd(lua_State *L)
   get_tuple(L, 2, ks, 3);
 
   double shininess = luaL_checknumber(L, 3);
-  double reflective_radius = luaL_checknumber(L, 4);
+  double roughess_radius = luaL_checknumber(L, 4);
   double refractive_index = luaL_checknumber(L, 5);
 
-  if (refractive_index != -1)
-  {
-    data->material = new DielectricMaterial(glm::vec3(kd[0], kd[1], kd[2]),
+  PhongMaterial* ph_mat = new PhongMaterial(glm::vec3(kd[0], kd[1], kd[2]),
                                        glm::vec3(ks[0], ks[1], ks[2]),
-                                       shininess, refractive_index);
-  } else if (reflective_radius != 0)
-  {
-    data->material = new ReflectiveMaterial(glm::vec3(kd[0], kd[1], kd[2]),
-                                       glm::vec3(ks[0], ks[1], ks[2]),
-                                       shininess, reflective_radius);
-  }
-  else
-  {
-    data->material = new PhongMaterial(glm::vec3(kd[0], kd[1], kd[2]),
-                                       glm::vec3(ks[0], ks[1], ks[2]),
-                                       shininess);
-  }
+                                       shininess, roughess_radius, refractive_index);
+
+  const char *kd_file = luaL_checkstring(L, 6);
+  const char *ks_file = luaL_checkstring(L, 7);
+
+  ph_mat->set_map_kd(kd_file);
+  ph_mat->set_map_ks(ks_file);
+
+  data->material = ph_mat;
 
   luaL_newmetatable(L, "gr.material");
+  lua_setmetatable(L, -2);
+
+  return 1;
+}
+
+// Create a Material Library
+
+extern "C" int gr_material_lib_cmd(lua_State *L)
+{
+  GRLUA_DEBUG_CALL;
+
+  gr_material_ud *data = (gr_material_ud *)lua_newuserdata(L, sizeof(gr_material_ud));
+  data->material = 0;
+
+  const char *filename = luaL_checkstring(L, 1);
+
+  data->material = new MaterialLib(filename);
+
+  luaL_newmetatable(L, "gr.material_lib");
   lua_setmetatable(L, -2);
 
   return 1;
@@ -521,24 +577,67 @@ extern "C" int gr_node_set_material_cmd(lua_State *L)
   return 0;
 }
 
-// Set a node's Texture
-extern "C" int gr_node_set_texture_cmd(lua_State *L)
+// Set a material texture
+extern "C" int material_set_kd_texture_cmd(lua_State *L)
 {
   GRLUA_DEBUG_CALL;
 
-  gr_node_ud *selfdata = (gr_node_ud *)luaL_checkudata(L, 1, "gr.node");
-  luaL_argcheck(L, selfdata != 0, 1, "Node expected");
+  gr_material_ud *selfdata = (gr_material_ud *)luaL_checkudata(L, 1, "gr.material");
+  luaL_argcheck(L, selfdata != 0, 1, "Mateiral expected");
 
-  GeometryNode *self = dynamic_cast<GeometryNode *>(selfdata->node);
+  PhongMaterial *self = dynamic_cast<PhongMaterial *>(selfdata->material);
 
-  luaL_argcheck(L, self != 0, 1, "Geometry node expected");
+  luaL_argcheck(L, self != 0, 1, "Phong Material expected");
 
   gr_texture_ud *matdata = (gr_texture_ud *)luaL_checkudata(L, 2, "gr.texture");
   luaL_argcheck(L, matdata != 0, 2, "Texture expected");
 
   Texture *texture = matdata->texture;
 
-  self->setTexture(texture);
+  self->set_kd_texture(texture);
+
+  return 0;
+}
+
+// Set a material texture
+extern "C" int material_set_ks_texture_cmd(lua_State *L)
+{
+  GRLUA_DEBUG_CALL;
+
+  gr_material_ud *selfdata = (gr_material_ud *)luaL_checkudata(L, 1, "gr.material");
+  luaL_argcheck(L, selfdata != 0, 1, "Phong Material expected");
+
+  PhongMaterial *self = dynamic_cast<PhongMaterial *>(selfdata->material);
+
+  luaL_argcheck(L, self != 0, 1, "Phong Material expected");
+
+  gr_texture_ud *matdata = (gr_texture_ud *)luaL_checkudata(L, 2, "gr.texture");
+  luaL_argcheck(L, matdata != 0, 2, "Texture expected");
+
+  Texture *texture = matdata->texture;
+
+  self->set_ks_texture(texture);
+
+  return 0;
+}
+
+extern "C" int gr_node_set_material_lib_cmd(lua_State *L)
+{
+  GRLUA_DEBUG_CALL;
+
+  gr_node_ud *selfdata = (gr_node_ud *)luaL_checkudata(L, 1, "gr.node");
+  luaL_argcheck(L, selfdata != 0, 1, "Node expected");
+
+  BlenderNode *self = dynamic_cast<BlenderNode *>(selfdata->node);
+
+  luaL_argcheck(L, self != 0, 1, "Blender node expected");
+
+  gr_material_ud *matdata = (gr_material_ud *)luaL_checkudata(L, 2, "gr.material_lib");
+  luaL_argcheck(L, matdata != 0, 2, "Material Lib expected");
+
+  MaterialLib *mat_lib = static_cast<MaterialLib *>(matdata->material);
+
+  self->setMaterialLib(mat_lib);
 
   return 0;
 }
@@ -650,6 +749,8 @@ static const luaL_Reg grlib_functions[] = {
     // New for assignment 5
     {"nh_cylinder", gr_nh_cylinder_cmd},
     {"nh_cone", gr_nh_cone_cmd},
+    {"blender_mesh", gr_blender_mesh_cmd},
+    {"material_lib", gr_material_lib_cmd},
     {0, 0}};
 
 // This is where all the member functions for "gr.node" objects are
@@ -672,7 +773,9 @@ static const luaL_Reg grlib_node_methods[] = {
     {"rotate", gr_node_rotate_cmd},
     {"translate", gr_node_translate_cmd},
     {"render", gr_render_cmd},
-    {"set_texture", gr_node_set_texture_cmd},
+    {"set_kd_texture", material_set_kd_texture_cmd},
+    {"set_ks_texture", material_set_ks_texture_cmd},
+    {"set_material_lib", gr_node_set_material_lib_cmd},
     {0, 0}};
 
 // This function calls the lua interpreter to define the scene and

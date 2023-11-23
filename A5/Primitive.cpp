@@ -60,9 +60,7 @@ void NonhierSphere::get_uv(HitRecord &rec) {
     vec3 d = normalize(m_pos - rec.p);
     double PI = 3.1415926;
 
-    rec.u = 0.5 + atan2(d.z, d.x) / (2*PI);
-    rec.v = 0.5 + asin(d.y) / PI;
-
+    rec.uv = vec2(0.5 + atan2(d.z, d.x) / (2*PI), 0.5 + asin(d.y) / PI);
 }
 
 bool NonhierSphere::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
@@ -121,15 +119,18 @@ bool NonhierBox::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
         vec3 normP = (rec.p - m_pos) / (float)m_size;
 
         if (normP.x <= 0.0001 || normP.x >= 0.9999) {
-            rec.u = normP.z;
-            rec.v = normP.y;
+            // rec.u = normP.z;
+            // rec.v = normP.y;
+            rec.uv = vec2(normP.z, normP.y);
 
         } else if ((normP.y <= 0.0001 || normP.y >= 0.9999)) {
-            rec.u = normP.x;
-            rec.v = normP.z;
+            // rec.u = normP.x;
+            // rec.v = normP.z;
+            rec.uv = vec2(normP.x, normP.z);
         } else {
-            rec.u = normP.x;
-            rec.v = normP.y;
+            // rec.u = normP.x;
+            // rec.v = normP.y;
+            rec.uv = vec2(normP.x, normP.y);
         }
         return true;
     } 

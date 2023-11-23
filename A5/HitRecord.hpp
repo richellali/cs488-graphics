@@ -3,16 +3,17 @@
 #include <glm/glm.hpp>
 #include "Material.hpp"
 #include "Texture.hpp"
+#include <string.h>
 
 class HitRecord {
     public:
-    double t;
+    double t=std::numeric_limits<float>::max();
     glm::vec3 normal;
     glm::vec3 p;
 
     Material *material;
+    std::string mat_name;
 
-    double u;
-    double v;
-    Texture *texture;
+    glm::vec2 uv;
+    Texture *texture; // TODO:: delete
 };

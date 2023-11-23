@@ -12,6 +12,10 @@ BlenderMesh::BlenderMesh(const std::string &fname)
 {
     std::ifstream ifs((OBJ_DIR+fname).c_str());
     std::string code;
+    size_t pre_idx_v = 1;
+    size_t pre_idx_vn = 1;
+    size_t pre_idx_vt = 1;
+
     while (ifs >> code)
     {
         if (code == "g") break;
@@ -19,7 +23,8 @@ BlenderMesh::BlenderMesh(const std::string &fname)
 
     while (ifs >> code) 
     {
-        mesh_map[code] = new Mesh(fname, ifs);
+        // std::cout << "mesh name: " << code << std::endl;
+        mesh_map[code] = new Mesh(fname, ifs, pre_idx_v, pre_idx_vn, pre_idx_vt);
     }
 }
 
@@ -28,5 +33,27 @@ BlenderMesh::~BlenderMesh()
 }
 
 bool BlenderMesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
-    return false;
+    float t=tmax;
+    bool isIntersected = false;
+    // std::cout << "b_mesh" << std::endl;
+
+    for (auto &m : mesh_map)
+    {
+        // if (m_name == "glass_Mesh") continue;
+        // std::cout << m_name << std::endl;
+        HitRecord tempRec;
+        if (m.second->intersected(ray, tmin, t, tempRec)) {
+            t = tempRec.t;
+
+            rec.t = t;
+            rec.p = tempRec.p;
+            rec.normal = tempRec.normal;
+            rec.mat_name = m.second->mat_name;
+
+            rec.uv = tempRec.uv;
+
+            isIntersected = true;
+        }
+    }
+    return isIntersected;
 }

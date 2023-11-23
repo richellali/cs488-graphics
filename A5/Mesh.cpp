@@ -1,13 +1,12 @@
 // Termm--Fall 2023
 
 #include <iostream>
-#include <fstream>
+#include <sstream>
 
 #include <glm/ext.hpp>
 
 // #include "cs488-framework/ObjFileDecoder.hpp"
 #include "Mesh.hpp"
-#include <iostream>
 
 std::string OBJ_DIR = "obj/";
 
@@ -28,7 +27,6 @@ bool rayTriangleIntersect(
   vec3 planeNormal = cross(v0v1, v0v2);
 
   // check if the ray and plane are parallel
-
   if (abs(dot(planeNormal, dir)) < eps)
   {
     return false;
@@ -36,8 +34,7 @@ bool rayTriangleIntersect(
 
   float D = -dot(planeNormal, v0);
   t = -(dot(planeNormal, orig) + D) / dot(planeNormal, dir);
-  if (t < 0)
-    return false;
+  if (t < 0) return false;
 
   vec3 p = orig + t * dir;
 
@@ -47,32 +44,74 @@ bool rayTriangleIntersect(
   vec3 edge0 = v1 - v0;
   vec3 vp0 = p - v0;
   C = cross(edge0, vp0);
-  if (dot(planeNormal, C) < 0)
-    return false;
+  if (dot(planeNormal, C) < 0) return false;
 
   vec3 edge1 = v2 - v1;
   vec3 vp1 = p - v1;
   C = cross(edge1, vp1);
-  if (dot(planeNormal, C) < 0)
-    return false;
+  if (dot(planeNormal, C) < 0) return false;
 
   vec3 edge2 = v0 - v2;
   vec3 vp2 = p - v2;
   C = cross(edge2, vp2);
-  if (dot(planeNormal, C) < 0)
-    return false;
+  if (dot(planeNormal, C) < 0) return false;
 
   return true;
 }
 
+size_t splitF(std::string str, size_t indices[3]) {
+  std::stringstream ss(str);
+  std::string index_str;
+  size_t index;
+
+  size_t res = 0;
+  bool own_vt = false;
+
+  while (std::getline(ss, index_str, '/'))
+  {
+    // std::cout << "index_str: " << index_str << std::endl;
+    if (index_str != "") {
+      std::stringstream index_ss(index_str);
+      index_ss >> index;
+      indices[res] = index;
+
+      if (res == 1) own_vt = true;
+    } else {
+      indices[res] = 0;
+    }
+    res++;
+  }
+  if (res == 3 && !own_vt) res++;
+  return res;
+}
+
 Mesh::Mesh(const std::string &fname)
-    : m_vertices(), m_faces(), fname(fname)
+    : m_vertices(), m_faces(), m_uv_coords(), m_normals(), fname(fname)
+{
+  std::ifstream ifs((OBJ_DIR+fname).c_str());
+  size_t dummy_idx_v = 1;
+  size_t dummy_idx_vn = 1;
+  size_t dummy_idx_vt = 1;
+  readObjFile(ifs, dummy_idx_v, dummy_idx_vn, dummy_idx_vt);
+}
+
+Mesh::Mesh(const std::string &fname, std::ifstream& ifs, size_t &pre_idx_v, size_t &pre_idx_vn, size_t &pre_idx_vt)
+    : m_vertices(), m_faces(), m_uv_coords(), m_normals(), fname(fname)
+{
+  readObjFile(ifs, pre_idx_v, pre_idx_vn, pre_idx_vt);
+}
+
+void Mesh::readObjFile(std::ifstream& ifs, size_t &pre_idx_v, size_t &pre_idx_vn, size_t &pre_idx_vt)
 {
   std::string code;
   double vx, vy, vz;
   size_t s1, s2, s3;
+  std::string s;
 
-  std::ifstream ifs((OBJ_DIR+fname).c_str());
+  size_t sub_index_v = pre_idx_v;
+  size_t sub_index_vn = pre_idx_vn;
+  size_t sub_index_vt = pre_idx_vt;
+
   while (ifs >> code)
   {
     if (code == "v")
@@ -80,7 +119,6 @@ Mesh::Mesh(const std::string &fname)
       ifs >> vx >> vy >> vz;
       m_vertices.push_back(glm::vec3(vx, vy, vz));
       
-      // #ifdef RENDER_BOUNDING_VOLUMES
       min_vec.x = min(vx, (double)min_vec.x);
       min_vec.y = min(vy, (double)min_vec.y);
       min_vec.z = min(vz, (double)min_vec.z);
@@ -88,27 +126,76 @@ Mesh::Mesh(const std::string &fname)
       max_vec.x = max(vx, (double)max_vec.x);
       max_vec.y = max(vy, (double)max_vec.y);
       max_vec.z = max(vz, (double)max_vec.z);
-      // std::cout << vy << " " << max_vec.y << std::endl;
-      // #endif
+      
+      pre_idx_v++;
+    }
+    else if (code == "vt")
+    {
+      ifs >> vx >> vy;
+      // TODO:: ATTENTION FLIP VY
+      m_uv_coords.push_back(glm::vec2(vx, 1-vy));
+      pre_idx_vt++;
+
+    }
+    else if (code == "vn")
+    {
+      ifs >> vx >> vy >> vz;
+      m_normals.push_back(glm::vec3(vx, vy, vz));
+      pre_idx_vn++;
     }
     else if (code == "f")
     {
-      ifs >> s1 >> s2 >> s3;
-      m_faces.push_back(Triangle(s1 - 1, s2 - 1, s3 - 1));
+      size_t num_ind;
+      size_t v_ind[3];
+      size_t t_ind[3];
+      size_t n_ind[3];
+      
+      for (int i=0; i<3; i++) {
+        size_t indices[3]; // v/vt/vn
+        ifs >> s;
+        num_ind = splitF(s, indices);
+        /*
+          num_ind meaning:
+          1 -> v only
+          2 -> v && vt
+          3 -> v && vt && vn
+          4 -> v && vn
+        */
+        if (num_ind >= 1) v_ind[i] = indices[0]-sub_index_v;
+
+        // std::cout << "num_ind: " << num_ind << std::endl;
+        if (num_ind >= 2) {
+          t_ind[i] = indices[1]-sub_index_vt;
+          if (num_ind != 4) hasVt = true;
+        } 
+
+        if (num_ind >= 3) {
+          n_ind[i] = indices[2]-sub_index_vn;
+          hasVn = true;
+        }
+      }
+      
+      m_faces.push_back(Triangle(v_ind, t_ind, n_ind));
+    } 
+    else if (code == "usemtl")
+    {
+      ifs >> s;
+      mat_name = s;
+    }
+    else if (code == "g")
+    {
+      break;
     }
   }
-  // #ifdef RENDER_BOUNDING_VOLUMES
-  // std::cout << to_string(max_vec) << " " << to_string(min_vec) << std::endl;
 
   vec3 temp = max_vec - min_vec;
-  // std::cout << to_string(temp) << std::endl;
-  // double max_sz = max(max(temp.x, temp.y), temp.z);
+
   nh_box = new NonhierBox(min_vec, temp);
-  // #endif
 }
 
 Mesh::Mesh(const glm::vec3 &m_pos, vec3 &m_size)
-    : m_vertices(), m_faces(), fname("cube.obj"), nh_box(nullptr)
+    : m_vertices(), m_faces(), m_uv_coords(), m_normals(), 
+    fname("cube.obj"), nh_box(nullptr)
 {
   std::string code;
   double vx, vy, vz;
@@ -135,10 +222,8 @@ Mesh::Mesh(const glm::vec3 &m_pos, vec3 &m_size)
 
 Mesh::~Mesh()
 {
-  // #ifdef RENDER_BOUNDING_VOLUMES
   if (nh_box)
     delete nh_box;
-  // #endif
 }
 
 std::ostream &operator<<(std::ostream &out, const Mesh &mesh)
@@ -164,11 +249,9 @@ std::ostream &operator<<(std::ostream &out, const Mesh &mesh)
 
 void Mesh::get_uv(HitRecord &rec)
 {
-  if (fname == "plane.obj")
+   if (fname == "plane.obj")
   {
-
-    rec.u = (rec.p.x + 1) / 2;
-    rec.v = (rec.p.z + 1) / 2;
+    rec.uv = vec2((rec.p.x + 1) / 2, (rec.p.z + 1) / 2);
     // std::cout << rec.u << " " << rec.v << std::endl;
   }
 }
@@ -177,6 +260,7 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
 {
   bool isIntersected = false;
   float tClosest = tmax;
+  vec2 uv;
 
   vec3 normal;
 
@@ -189,7 +273,6 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
   }
 #else
   HitRecord temp;
-  temp.t = std::numeric_limits<float>::max();
 
   if (nh_box && !nh_box->intersected(ray, tmin, tmax, temp))
   {
@@ -209,6 +292,12 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
       isIntersected = true;
 
       normal = cross(m_vertices[triangle.v2] - m_vertices[triangle.v1], m_vertices[triangle.v3] - m_vertices[triangle.v1]);
+
+      if (hasVt) 
+      {
+        uv = m_uv_coords[triangle.uv1];
+        // std::cout << "uv index: " << triangle.uv1 << std::endl;
+      }
     }
   
   }
@@ -219,7 +308,13 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
     rec.p = ray.at(rec.t);
     rec.normal = normal;
 
-    get_uv(rec);
+    if (hasVt)
+    {
+      rec.uv = uv;
+      // std::cout << "uv: " << to_string(uv) << std::endl;
+    } else {
+      get_uv(rec);
+    }
   }
 
   return isIntersected;
