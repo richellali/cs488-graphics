@@ -15,6 +15,8 @@ public:
 	void setMaterial( Material *material );
 	// void setTexture(Texture *texture);
 
+	virtual ~GeometryNode();
+
 	Material *m_material;
 	Primitive *m_primitive;
 	// Texture *m_texture;

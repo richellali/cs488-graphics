@@ -28,7 +28,7 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 
 	// std::cout << "Hit Point " << to_string(ray.getOrigin()) << std::endl;
 	// std::cout << "Out direction " << to_string(ray.getDirection()) << std::endl;
-
+		// std::cout << "new Ray" << std::endl;
 	// BASE CASE
 	if (depth == 0)
 	{
@@ -49,7 +49,7 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 		vec3 kd = material->kd(rec.uv.x, rec.uv.y);
 		vec3 ks = material->ks(rec.uv.x, rec.uv.y);
 
-
+		// std::cout << "intersected" << std::endl;
 		colour = ambient * kd;
 		
 		for (Light *light : lights)

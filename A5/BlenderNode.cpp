@@ -15,6 +15,10 @@ void BlenderNode::setMaterialLib(MaterialLib * material_lib)
     m_mat_lib = material_lib;
 }
 
+BlenderNode::~BlenderNode() {
+	if ( m_mat_lib != nullptr) delete m_primitive;
+}
+
 bool BlenderNode::intersected(Ray &ray, float tmin, HitRecord &rec)
 {
 	// std::cout << "blender intersect" << std::endl;

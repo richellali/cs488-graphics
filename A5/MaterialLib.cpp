@@ -74,6 +74,13 @@ MaterialLib::MaterialLib(const std::string &fname)
     }
 }
 
+MaterialLib::~MaterialLib(){
+    for (auto &m : m_material_map)
+    {
+        delete m.second;
+    }
+}
+
 Material *MaterialLib::get_mat(std::string &mat_name)
 {
     return m_material_map[mat_name];

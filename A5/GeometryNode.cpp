@@ -33,6 +33,11 @@ void GeometryNode::setMaterial( Material *mat )
 	m_material = mat;
 }
 
+GeometryNode::~GeometryNode()
+{
+	delete m_primitive;
+}
+
 // void GeometryNode::setTexture( Texture *texture )
 // {
 // 	// Obviously, there's a potential memory leak here.  A good solution

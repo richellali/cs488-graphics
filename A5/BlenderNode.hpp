@@ -12,10 +12,11 @@
 
 class BlenderNode : public SceneNode {
 public:
-    BlenderNode( const std::string & name, Primitive *prim );
+    BlenderNode( const std::string & name, Primitive *prim);
 
     void setMaterialLib( MaterialLib *mat_lib);
 
+    virtual ~BlenderNode();
     
     Primitive *m_primitive;
     MaterialLib *m_mat_lib;

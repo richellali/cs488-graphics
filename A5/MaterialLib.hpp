@@ -7,6 +7,7 @@
 class MaterialLib : public Material {
     public:
     MaterialLib(const std::string &fname);
+    virtual ~MaterialLib();
     Material *get_mat(std::string &mat_name);
 
     private:

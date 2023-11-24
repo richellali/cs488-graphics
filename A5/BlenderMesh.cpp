@@ -30,12 +30,15 @@ BlenderMesh::BlenderMesh(const std::string &fname)
 
 BlenderMesh::~BlenderMesh()
 {
+    for (auto &m : mesh_map) {
+        delete m.second;
+    }
 }
 
 bool BlenderMesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {
     float t=tmax;
     bool isIntersected = false;
-    // std::cout << "b_mesh" << std::endl;
+    // std::cout << "b_mesh intersect" << std::endl;
 
     for (auto &m : mesh_map)
     {

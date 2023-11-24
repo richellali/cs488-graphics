@@ -27,9 +27,9 @@ struct Triangle
 	size_t uv2;
 	size_t uv3;
 
-	size_t n1;
-	size_t n2;
-	size_t n3;
+	// size_t n1;
+	// size_t n2;
+	// size_t n3;
 
 	Triangle( size_t pv1, size_t pv2, size_t pv3 )
 		: v1( pv1 )
@@ -38,15 +38,15 @@ struct Triangle
 		, uv1( 0 )
 		, uv2( 0 )
 		, uv3( 0 )
-		, n1( 0 )
-		, n2( 0 )
-		, n3( 0 )
+		// , n1( 0 )
+		// , n2( 0 )
+		// , n3( 0 )
 	{}
 
 	Triangle( 
 		size_t pv1, size_t pv2, size_t pv3,
-		size_t tv1, size_t tv2, size_t tv3,
-		size_t nv1, size_t nv2, size_t nv3
+		size_t tv1, size_t tv2, size_t tv3
+		// size_t nv1, size_t nv2, size_t nv3
 	 )
 		: v1( pv1 )
 		, v2( pv2 )
@@ -54,21 +54,21 @@ struct Triangle
 		, uv1( tv1 )
 		, uv2( tv2 )
 		, uv3( tv3 )
-		, n1( nv1 )
-		, n2( nv2 )
-		, n3( nv3 )
+		// , n1( nv1 )
+		// , n2( nv2 )
+		// , n3( nv3 )
 	{}
 
-	Triangle(size_t v[3], size_t t[3], size_t n[3])
+	Triangle(size_t v[3], size_t t[3])
 		: v1( v[0] )
 		, v2( v[1] )
 		, v3( v[2] )
 		, uv1( t[0] )
 		, uv2( t[1] )
 		, uv3( t[2] )
-		, n1( n[0] )
-		, n2( n[1] )
-		, n3( n[2] )
+		// , n1( n[0] )
+		// , n2( n[1] )
+		// , n3( n[2] )
 	{}
 };
 
@@ -91,7 +91,7 @@ private:
 	std::vector<glm::vec3> m_vertices;
 	std::vector<Triangle> m_faces;
 	std::vector<glm::vec2> m_uv_coords;
-	std::vector<glm::vec3> m_normals;
+	// std::vector<glm::vec3> m_normals;
 	std::string fname;
 
 	// #ifdef RENDER_BOUNDING_VOLUMES

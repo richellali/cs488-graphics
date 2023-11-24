@@ -86,7 +86,7 @@ size_t splitF(std::string str, size_t indices[3]) {
 }
 
 Mesh::Mesh(const std::string &fname)
-    : m_vertices(), m_faces(), m_uv_coords(), m_normals(), fname(fname)
+    : m_vertices(), m_faces(), m_uv_coords(), fname(fname), nh_box(nullptr)
 {
   std::ifstream ifs((OBJ_DIR+fname).c_str());
   size_t dummy_idx_v = 1;
@@ -96,7 +96,7 @@ Mesh::Mesh(const std::string &fname)
 }
 
 Mesh::Mesh(const std::string &fname, std::ifstream& ifs, size_t &pre_idx_v, size_t &pre_idx_vn, size_t &pre_idx_vt)
-    : m_vertices(), m_faces(), m_uv_coords(), m_normals(), fname(fname)
+    : m_vertices(), m_faces(), m_uv_coords(), fname(fname), nh_box(nullptr)
 {
   readObjFile(ifs, pre_idx_v, pre_idx_vn, pre_idx_vt);
 }
@@ -137,12 +137,12 @@ void Mesh::readObjFile(std::ifstream& ifs, size_t &pre_idx_v, size_t &pre_idx_vn
       pre_idx_vt++;
 
     }
-    else if (code == "vn")
-    {
-      ifs >> vx >> vy >> vz;
-      m_normals.push_back(glm::vec3(vx, vy, vz));
-      pre_idx_vn++;
-    }
+    // else if (code == "vn")
+    // {
+    //   ifs >> vx >> vy >> vz;
+    //   m_normals.push_back(glm::vec3(vx, vy, vz));
+    //   pre_idx_vn++;
+    // }
     else if (code == "f")
     {
       size_t num_ind;
@@ -169,13 +169,13 @@ void Mesh::readObjFile(std::ifstream& ifs, size_t &pre_idx_v, size_t &pre_idx_vn
           if (num_ind != 4) hasVt = true;
         } 
 
-        if (num_ind >= 3) {
-          n_ind[i] = indices[2]-sub_index_vn;
-          hasVn = true;
-        }
+        // if (num_ind >= 3) {
+        //   n_ind[i] = indices[2]-sub_index_vn;
+        //   hasVn = true;
+        // }
       }
       
-      m_faces.push_back(Triangle(v_ind, t_ind, n_ind));
+      m_faces.push_back(Triangle(v_ind, t_ind));
     } 
     else if (code == "usemtl")
     {
@@ -188,13 +188,14 @@ void Mesh::readObjFile(std::ifstream& ifs, size_t &pre_idx_v, size_t &pre_idx_vn
     }
   }
 
+  if (mat_name == "") std::cerr << "Empty Material" << std::endl;
   vec3 temp = max_vec - min_vec;
 
   nh_box = new NonhierBox(min_vec, temp);
 }
 
 Mesh::Mesh(const glm::vec3 &m_pos, vec3 &m_size)
-    : m_vertices(), m_faces(), m_uv_coords(), m_normals(), 
+    : m_vertices(), m_faces(), m_uv_coords(),
     fname("cube.obj"), nh_box(nullptr)
 {
   std::string code;
