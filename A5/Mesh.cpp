@@ -307,7 +307,7 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
   {
     rec.t = tClosest;
     rec.p = ray.at(rec.t);
-    rec.normal = normal;
+    rec.set_face_normal(ray.getDirection(), normal);
 
     if (hasVt)
     {

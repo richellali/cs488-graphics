@@ -145,7 +145,8 @@ bool PhongMaterial::scatter(Ray &ray, HitRecord &rec, Ray &out_ray, double &atte
 		return false;
 	}
 
-	vec3 normal = ray.front_face ? normalize(rec.normal) : -normalize(rec.normal);
+	// vec3 normal = ray.front_face ? normalize(rec.normal) : -normalize(rec.normal);
+	vec3 normal = normalize(rec.normal);
 
 	if (isHollowGlass()) { // Might fix using other methods later
 		attenuation = 0.9;
@@ -155,24 +156,25 @@ bool PhongMaterial::scatter(Ray &ray, HitRecord &rec, Ray &out_ray, double &atte
 	
 	vec3 in_ray = normalize(ray.getDirection());
 
-	// // schlick Approx
-	// auto r0 = (1 - refraction_ratio) / (1 + refraction_ratio);
-	// r0 = r0*r0;
-	// float approx_theta = fmin(dot(-in_ray, normalize(rec.normal)), 1.0);
-	// double approx = r0 + (1-r0) * pow(1-approx_theta, 5);
+	
 
 	if (isTransparent()) 
 	{
-		float refraction_ratio = ray.front_face ? 1.0 / refractive_index : refractive_index;
+		float refraction_ratio = rec.front_face ? 1.0 / refractive_index : refractive_index;
 		double cos_theta = dot(in_ray, normal);
 		float k = 1.0f - refraction_ratio * refraction_ratio * (1.0f - cos_theta * cos_theta);
 
+		// schlick Approx
+		// auto r0 = (1 - refraction_ratio) / (1 + refraction_ratio);
+		// r0 = r0*r0;
+		// double approx = r0 + (1-r0) * pow(1-fabs(cos_theta), 5);
+
 		if (k <= 0) {
-			// attenuation = 0.2;
-			// vec3 out_direction = getReflectedRay(in_ray, normal); // reflection
-	 		// out_ray = Ray(rec.p , out_direction, ray.front_face);
-			return false;
-		} else {
+			attenuation = 0.2;
+			vec3 out_direction = getReflectedRay(rec.p, in_ray, normal); // reflection
+	 		out_ray = Ray(rec.p , out_direction, ray.front_face);
+			return true;
+			} else {
 			attenuation = 0.9;
 			vec3 out_direction = refraction_ratio * in_ray - (refraction_ratio * cos_theta + sqrt(k)) * normal;
 			out_ray = Ray(rec.p - normal * 0.001f, out_direction, !ray.front_face);

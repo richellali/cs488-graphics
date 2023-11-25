@@ -16,4 +16,8 @@ class HitRecord {
 
     glm::vec2 uv;
     Texture *texture; // TODO:: delete
+
+    bool front_face;
+    void set_face_normal(const glm::vec3 &direction, glm::vec3 normal);
+
 };

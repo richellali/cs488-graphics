@@ -48,12 +48,13 @@ bool BlenderMesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) 
         if (m.second->intersected(ray, tmin, t, tempRec)) {
             t = tempRec.t;
 
-            rec.t = t;
-            rec.p = tempRec.p;
-            rec.normal = tempRec.normal;
-            rec.mat_name = m.second->mat_name;
+            // rec.t = tempRec.t;
+            // rec.p = tempRec.p;
+            // rec.normal = tempRec.normal;
+            // rec.uv = tempRec.uv;
+            rec = tempRec;
 
-            rec.uv = tempRec.uv;
+            rec.mat_name = m.second->mat_name;
 
             isIntersected = true;
         }

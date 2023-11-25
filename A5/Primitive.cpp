@@ -89,7 +89,8 @@ bool NonhierSphere::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec
 
     rec.t = t;
     rec.p = ray.at(t);
-    rec.normal = rec.p - m_pos;
+    // rec.normal = rec.p - m_pos;
+    rec.set_face_normal(ray.getDirection(), (rec.p-m_pos)/m_radius);
     get_uv(rec);
     if (t < tmin || t > tmax) return false;
 
@@ -177,7 +178,9 @@ bool NonhierCylinder::intersected(Ray &ray, float tmin, float tmax, HitRecord &r
         rec.t = t;
         rec.p = ray.at(t);
         vec3 va = vec3(0, 0, 1);
-        rec.normal = (rec.p - m_pos) - dot(va, rec.p-m_pos) * va;
+        vec3 normal = (rec.p - m_pos) - dot(va, rec.p-m_pos) * va;
+
+        rec.set_face_normal(ray.getDirection(), normal);
 
         isIntersected = true;
     }
@@ -191,7 +194,9 @@ bool NonhierCylinder::intersected(Ray &ray, float tmin, float tmax, HitRecord &r
         if (!(isIntersected && cap_t > rec.t)) {
             rec.t = cap_t;
             rec.p = ray.at(cap_t);
-            rec.normal = vec3(0, 0, -1);
+            // rec.normal = vec3(0, 0, -1);
+
+            rec.set_face_normal(ray.getDirection(), vec3(0, 0, -1));
             isIntersected = true;
         } 
         
@@ -206,7 +211,8 @@ bool NonhierCylinder::intersected(Ray &ray, float tmin, float tmax, HitRecord &r
         if (!(isIntersected && cap_t > rec.t)) {
             rec.t = cap_t;
             rec.p = ray.at(cap_t);
-            rec.normal = vec3(0, 0, 1);
+            // rec.normal = vec3(0, 0, 1);
+            rec.set_face_normal(ray.getDirection(), vec3(0, 0, 1));
             isIntersected = true;
         } 
     }
@@ -262,7 +268,8 @@ bool NonhierCone::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) 
         vec3 va = vec3(0, 0, 1);
         vec3 m = (rec.p - m_pos) - dot(va, rec.p-m_pos) * va;
         double alpha = atan2(m_radius, m_height);
-        rec.normal = cos(alpha)*m + sin(alpha)*va;
+        vec3 normal = cos(alpha)*m + sin(alpha)*va;
+        rec.set_face_normal(ray.getDirection(), normal);
 
         isIntersected = true;
     }
@@ -276,7 +283,8 @@ bool NonhierCone::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) 
         if (!(isIntersected && cap_t > rec.t)) {
             rec.t = cap_t;
             rec.p = ray.at(cap_t);
-            rec.normal = vec3(0, 0, 1);
+            // rec.normal = vec3(0, 0, 1);
+            rec.set_face_normal(ray.getDirection(), vec3(0, 0, 1));
             isIntersected = true;
         } 
         
