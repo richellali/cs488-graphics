@@ -399,6 +399,10 @@ extern "C" int gr_light_cmd(lua_State *L)
   gr_light_ud *data = (gr_light_ud *)lua_newuserdata(L, sizeof(gr_light_ud));
   data->light = 0;
 
+#ifdef RENDER_SOFT_SHADOW
+  const char *fname = luaL_checkstring(L, 1);
+  data->light = new Light(fname);
+#else
   Light l;
 
   double col[3];
@@ -409,6 +413,7 @@ extern "C" int gr_light_cmd(lua_State *L)
   l.colour = glm::vec3(col[0], col[1], col[2]);
 
   data->light = new Light(l);
+#endif
 
   luaL_newmetatable(L, "gr.light");
   lua_setmetatable(L, -2);

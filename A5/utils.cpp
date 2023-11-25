@@ -28,6 +28,16 @@ vec3 random_in_unit_disk()
 	}
 }
 
+vec2 random_for_light()
+{
+	while (true)
+	{
+		auto p = vec2(random_double(0, 1), random_double(0, 1));
+		if (p.x + p.y <= 1)
+			return p;
+	}
+}
+
 vec3 random_on_sphere()
 {
 	while (true)

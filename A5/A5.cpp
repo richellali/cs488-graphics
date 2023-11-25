@@ -15,7 +15,8 @@
 using namespace glm;
 int SAMPLE_SIZE = 10;
 
-void echoProgress(int now, int total) {
+void echoProgress(int now, int total)
+{
 	std::cout << "\b\b\b\b\b\b\b\b";
 	std::cout << std::to_string(now * 100 / total) << "\% DONE";
 	std::cout << std::flush;
@@ -28,7 +29,7 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 
 	// std::cout << "Hit Point " << to_string(ray.getOrigin()) << std::endl;
 	// std::cout << "Out direction " << to_string(ray.getDirection()) << std::endl;
-		// std::cout << "new Ray" << std::endl;
+	// std::cout << "new Ray" << std::endl;
 	// BASE CASE
 	if (depth == 0)
 	{
@@ -51,31 +52,52 @@ vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 
 		// std::cout << "intersected" << std::endl;
 		colour = ambient * kd;
-		
+
 		for (Light *light : lights)
 		{
-			// move hitpoint outside of the surface to avoid incorrect numerical rounding
-			Ray shadow = Ray(rec.p+normalize(rec.normal) * 0.001f, light->position - rec.p);
-			HitRecord dummyRec;
-
-			if (root->intersected(shadow, 0.0f, dummyRec))
+#ifdef RENDER_SOFT_SHADOW
+			for (LightTriangle triangle : light->m_faces)
 			{
-				continue;
+				vec3 l_v1 = light->m_vertices[triangle.v1];
+				vec3 l_v2 = light->m_vertices[triangle.v2];
+				vec3 l_v3 = light->m_vertices[triangle.v3];
+
+				for (int light_n = 0; light_n < light->light_density; light_n++)
+				{
+					vec2 rand_coeff = random_for_light();
+					vec3 light_pos = l_v1 + rand_coeff.x * (l_v2 - l_v1) + rand_coeff.y * (l_v3 - l_v1);
+					// std::cout << "light_pos: " << to_string(light_pos) << std::endl;
+#else
+			vec3 light_pos = light->position;
+#endif
+					// move hitpoint outside of the surface to avoid incorrect numerical rounding
+					Ray shadow = Ray(rec.p + normalize(rec.normal) * 0.001f, light_pos - rec.p);
+					HitRecord dummyRec;
+
+					if (root->intersected(shadow, 0.0f, dummyRec))
+					{
+						continue;
+					}
+
+					vec3 l = light_pos - rec.p;
+					float light_length = length(l);
+					float attenuation = light->falloff[0] + light->falloff[1] * light_length + light->falloff[2] * light_length * light_length;
+
+					l = normalize(l);
+					vec3 n = normalize(rec.normal);
+					vec3 r = normalize(-l + 2 * dot(l, n) * n);
+					vec3 v = normalize(eye - rec.p);
+
+					float vDotRPow = pow(max(0.0f, (float)dot(v, r)), material->p());
+					float nDotL = dot(n, l);
+
+#ifdef RENDER_SOFT_SHADOW
+					colour += light->colour * (kd + ks * vDotRPow / nDotL) * nDotL / attenuation / light->lightDenseNum();
+				}
 			}
-
-			vec3 l = light->position - rec.p;
-			float light_length = length(l);
-			float attenuation = light->falloff[0] + light->falloff[1] * light_length + light->falloff[2] * light_length * light_length;
-
-			l = normalize(l);
-			vec3 n = normalize(rec.normal);
-			vec3 r = normalize(-l + 2 * dot(l, n) * n);
-			vec3 v = normalize(eye - rec.p);
-
-			float vDotRPow = pow(max(0.0f, (float)dot(v, r)), material->p());
-			float nDotL = dot(n, l);
-
+#else
 			colour += light->colour * (kd + ks * vDotRPow / nDotL) * nDotL / attenuation;
+#endif
 		}
 
 		// RECURSIVE CASE
@@ -104,7 +126,6 @@ noIntersection:
 	return colour;
 }
 
-
 void traceColorPerRow(SceneNode *root, Image *image, const glm::vec3 &eye,
 					  uint j, size_t h, size_t w,
 					  const glm::vec3 &x, const glm::vec3 &y, const glm::vec3 &bot_left_direction,
@@ -124,7 +145,7 @@ void traceColorPerRow(SceneNode *root, Image *image, const glm::vec3 &eye,
 #endif
 
 #ifdef RENDER_ANTI_ALIASING
-		for (int i = 0; i < SAMPLE_SIZE; ++i)
+		for (int k = 0; k < SAMPLE_SIZE; ++k)
 		{
 			vec3 random_p = random_in_unit_disk();
 			Ray ray = Ray(eye, direction + 0.5 * random_p.x * x + 0.5 * random_p.y * y);
@@ -212,8 +233,8 @@ void A5_Render(
 	{
 #ifdef RENDER_MULTITHREADING
 		threads.push_back(std::thread(traceColorPerRow, root, &image,
-									eye, j, h, w, x, y, bot_left_direction,
-									ambient, lights));
+									  eye, j, h, w, x, y, bot_left_direction,
+									  ambient, lights));
 #else
 		traceColorPerRow(root, &image, eye, j, h, w, x, y, bot_left_direction,
 						 ambient, lights);
@@ -225,7 +246,7 @@ void A5_Render(
 	{
 		th.join();
 		progress++;
-		echoProgress(progress,h);
+		echoProgress(progress, h);
 	}
-#endif	
+#endif
 }
