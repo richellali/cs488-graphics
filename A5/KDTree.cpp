@@ -1,6 +1,7 @@
 #include "KDTree.hpp"
 #include <numeric>
 #include <iostream>
+#include <algorithm>
 #include <glm/ext.hpp>
 
 using namespace glm;
