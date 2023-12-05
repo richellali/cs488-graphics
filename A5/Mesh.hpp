@@ -38,15 +38,16 @@ public:
   void getRandomPointAndDirection(glm::mat4 &trans, glm::mat4 &t_invtrans, glm::vec3 &pt, glm::vec3 &direction);
   
   std::string mat_name;
+
   bool isLight=false;
+  bool useBary=true;
   
 private:
 	std::vector<glm::vec3> m_vertices;
 	std::vector<MeshTriangle> m_faces;
 	std::vector<glm::vec2> m_uv_coords;
 	std::vector<glm::vec3> m_normals;
-	std::string fname;
-
+	
 	// #ifdef RENDER_BOUNDING_VOLUMES
 		glm::vec3 min_vec;
 		glm::vec3 max_vec;
@@ -56,10 +57,12 @@ private:
 	bool hasVt=false;
 	bool hasVn=false;
 
+  std::string fname;
+
 	bool rayTriangleIntersect(
     const glm::vec3 &orig, const glm::vec3 &dir,
     const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2,
-    float &t);
+    float &t, float &u, float &v);
 	
 
 	void readObjFile(std::ifstream& ifs, size_t &pre_idx_v, size_t &pre_idx_vn, size_t &pre_idx_vt, bool check_o);

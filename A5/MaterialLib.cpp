@@ -45,6 +45,11 @@ MaterialLib::MaterialLib(const std::string &fname)
             ifs >> code;
             cur_mat->set_map_kd(code);
         }
+        else if (code == "map_Ns")
+        {
+            ifs >> code;
+            cur_mat->set_map_ns(code);
+        }
         else if (code == "Ni")
         {
             ifs >> vx;

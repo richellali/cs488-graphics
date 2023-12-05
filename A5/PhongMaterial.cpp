@@ -43,6 +43,7 @@ PhongMaterial::PhongMaterial(
 PhongMaterial::~PhongMaterial() {
 	if (map_kd != nullptr) delete map_kd;
 	if (map_ks != nullptr) delete map_ks;
+	if (map_ns != nullptr) delete map_ns;
 }
 
 // -----------------------------------------------------------
@@ -65,7 +66,12 @@ glm::vec3 PhongMaterial::ka() {
 	return m_ka; 
 }
 
-double PhongMaterial::p() { return m_shininess; }
+double PhongMaterial::p(double u, double v) { 
+	// if (map_ns == nullptr) return m_shininess; 
+	// // std::cout << to_string(map_ns->colour(u, v)) << std::endl;
+	// return (double) map_ns->colour(u, v).r;
+	return m_shininess; 
+}
 
 void PhongMaterial::set_kd(glm::vec3 kd) {
 	m_kd = kd;
@@ -96,6 +102,11 @@ void PhongMaterial::set_map_kd(const std::string &map_kd_name) {
 void PhongMaterial::set_map_ks(const std::string &map_ks_name) {
 	if (map_ks_name == "") return;
 	map_ks = new Texture(map_ks_name);
+}
+
+void PhongMaterial::set_map_ns(const std::string &map_ns_name) {
+	if (map_ns_name == "") return;
+	map_ns = new Texture(map_ns_name);
 }
 
 void PhongMaterial::set_kd_texture(Texture *texture) {
@@ -194,7 +205,7 @@ bool PhongMaterial::scatter(Ray &ray, HitRecord &rec, Ray &out_ray, double &atte
 	{
 		if (getRefractedRay(rec, in_ray, out_ray, normal, force_specular))
 		{
-			attenuation = 0.9;
+			attenuation = 0.95;
 			return true;
 		}
 	} 
@@ -207,129 +218,17 @@ bool PhongMaterial::scatter(Ray &ray, HitRecord &rec, Ray &out_ray, double &atte
 
 void PhongMaterial::getDiffuseReflected(HitRecord &rec, Ray &out_ray)
 {
-	float pdf;
-  vec3 dir = random_direction_hemisphere(pdf);
+  vec3 dir = random_direction_hemisphere();
   vec3 normal = normalize(rec.normal);
   out_ray =  Ray(rec.p + normal * 0.001f, orthonormalBasis(normal) * dir); // change of basis
 }
 
 
-glm::vec3 PhongMaterial::getReflectanceProb()
-{
-	glm::vec3 kd = this->kd();
-	if (isDiffuse()) kd;
-
-	return vec3(1.0f);
-}
-
-
-bool PhongMaterial::isSameHemiSphere(glm::vec3 &w, glm::vec3 &v)
-{
-	return w.z * v.z > 0;
-}
-
-// --------------------------------------------------------------
-glm::vec3 PhongMaterial::f_diffuse(glm::vec3 &wi, glm::vec3 &wo)
-{
-	if (!isSameHemiSphere(wi, wo)) return vec3(0.0f);
-
-	return getReflectanceProb() * invPi;
-}
-
-
-glm::vec3 PhongMaterial::sample_diffuse(glm::vec3 &normal, float &pdf)
-{
-	return orthonormalBasis(normal) * random_direction_hemisphere(pdf);
-}
-
-
-glm::vec3 PhongMaterial::f_perfect_reflect()
-{
-	return getReflectanceProb() * invPi;
-}
-
-// glm::vec3 PhongMaterial::sample_perfect_reflect(glm::vec3 &wo){
-// 	return vec3(-wo.x, -wo.y, wo.z);
-// }
-
-glm::vec3 PhongMaterial::f_perfect_transmission()
-{
-	return vec3(0.0f);
-}
-
-// glm::vec3 PhongMaterial::sample_perfect_transmission(glm::vec3 &wo){
-// 	return vec3(-wo.x, -wo.y, wo.z);
-// }
-
-// glm::vec3 PhongMaterial::f_rough_reflect()
-// {
-// 	return vec3(0.0f); // temp not available
-// }
-
-// glm::vec3 PhongMaterial::f_rough_transmission()
-// {
-// 	return vec3(0.0f); // temp not available
-// }
 
 // --------------------------------------------------------------
 
-void PhongMaterial::sample_ray(HitRecord &rec, Ray &ray, Ray &light_ray, bool &goTrans, float &pdf)
+glm::vec3 PhongMaterial::sample_diffuse(glm::vec3 &normal)
 {
-	vec3 normal = normalize(rec.normal);
-	vec3 eye_ray = normalize(ray.getDirection());
-
-	if (isDiffuse()){
-		light_ray = Ray(rec.p, sample_diffuse(normal, pdf));
-		return;
-	}
-
-	pdf = 1.0f;
-	if (isTransparent() && getRefractedRay(rec, eye_ray, light_ray, normal))
-	{
-		
-		goTrans = true;
-		return;
-	}
-
-	getReflectedRay(rec.p, eye_ray, light_ray, normal);
-
+	return orthonormalBasis(normal) * random_direction_hemisphere();
 }
 
-glm::vec3 PhongMaterial::evaluateBRDF(vec3 wi, vec3 wo)
-{
-	if (isDiffuse())
-	{
-		return f_diffuse(wi, wo);
-	} 
-	
-	else if (isTransparent())
-	{
-		return vec3(0.0f);
-	}
-	else 
-	{
-		return vec3(1.0f);
-	}
-}
-
-glm::vec3 PhongMaterial::BRDF(Ray &eye_ray, HitRecord &rec, Ray &light_ray, float &pdf)
-{
-	bool goTrans = false;
-	sample_ray(rec, eye_ray, light_ray, goTrans, pdf);
-
-	if (isDiffuse())
-	{
-		glm::vec3 wi= normalize(light_ray.getDirection());
-		glm::vec3 wo= normalize(eye_ray.getDirection());
-		// pdf = invPi * abs(dot(normalize(rec.normal), normalize(wo)));
-		return f_diffuse(wi, wo);
-	}
-	else if (isTransparent())
-	{
-		return f_perfect_transmission();
-	}
-	else
-	{
-		return f_perfect_reflect();
-	}
-}

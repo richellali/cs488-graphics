@@ -63,24 +63,17 @@ public:
   // AreaLight(const std::string &fname);
   AreaLight(Mesh *_mesh, glm::vec3 _colour);
   virtual ~AreaLight(){}
-  // float getAtten();
 
-  // size_t lightDenseNum();
   glm::vec3 getRandomPoint() override;
   void getRandomPointAndDirection(glm::vec3 &pt, glm::vec3 &direction) override;
   double getArea() override;
   glm::vec3 getPower() override;
-
-  // std::vector<glm::vec3> m_vertices;
-	// std::vector<Triangle> m_faces;
-  // size_t light_density;
 
   glm::mat4 trans;
   glm::mat4 t_invtrans;
 
   private:
   Mesh * m_mesh;
-
 };
 
 std::ostream& operator<<(std::ostream& out, const Light& l);

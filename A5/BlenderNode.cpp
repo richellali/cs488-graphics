@@ -33,18 +33,8 @@ bool BlenderNode::intersected(Ray &ray, float tmin, HitRecord &rec)
 	// std::cout << "blender back" << std::endl;
 
 	if (isIntersected) {
-		// rec.t = tempRec.t;
-		// rec.p = tempRec.p;
-		// rec.normal = tempRec.normal;
-		// rec.uv = tempRec.uv;
 		rec = tempRec;
-
-        // TODO:: fix
-		// rec.material = m_material;
-		// std::cout << "Hit mat: "<< tempRec.mat_name << std::endl;
-		
 		rec.material =  m_mat_lib->get_mat(tempRec.mat_name);
-		// rec.texture = m_mat_lib;
 	}
 
 		
@@ -57,9 +47,11 @@ bool BlenderNode::intersected(Ray &ray, float tmin, HitRecord &rec)
 	if (isIntersected) {
 		vec4 transNormal = transpose(invtrans) * vec4(rec.normal, 0.0f);
 		vec4 transPoint = trans * vec4(rec.p, 1.0f);
+		vec4 transShadingNormal = transpose(invtrans) * vec4(rec.shading_normal, 0.0f);
 
 		rec.normal = vec3(transNormal.x, transNormal.y, transNormal.z);
 		rec.p = vec3(transPoint.x, transPoint.y, transPoint.z);
+		rec.shading_normal = vec3(transShadingNormal.x, transShadingNormal.y, transShadingNormal.z);
 	}
 
 	return isIntersected;

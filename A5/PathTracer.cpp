@@ -9,7 +9,7 @@
 using namespace glm;
 
 vec3 PathTracer::ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
-						   const std::list<Light *> &lights, const glm::vec3 &eye, int depth)
+						   const std::list<Light *> &lights, const glm::vec3 &eye, int depth, const Texture *scene_text)
 {
 	if (depth == 0)
 	{
@@ -19,7 +19,6 @@ vec3 PathTracer::ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 	vec3 colour = vec3(0.0f);
 
 	HitRecord rec;
-	// rec.texture = nullptr;
 	if (root->intersected(ray, 0.00001f, rec))
 	{
 		PhongMaterial *material = static_cast<PhongMaterial *>(rec.material);
@@ -49,7 +48,6 @@ vec3 PathTracer::ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 				// move hitpoint outside of the surface to avoid incorrect numerical rounding
 				Ray shadow = Ray(rec.p + normalize(rec.normal) * 0.001f, light_pos - rec.p);
 				HitRecord dummyRec;
-
 				if (root->intersected(shadow, 0.0f, dummyRec))
 				{
 					continue;
@@ -76,6 +74,7 @@ vec3 PathTracer::ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 			colour += light->colour * (kd + ks * vDotRPow / nDotL) * nDotL / attenuation;
 #endif
 		}
+		std::cout << to_string(colour) << std::endl;
 
 		// RECURSIVE CASE
 
@@ -85,7 +84,7 @@ vec3 PathTracer::ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
 		if (!material->isDiffuse() && material->scatter(ray, rec, out_ray, out_atten))
 		{
 			colour *= (1 - out_atten);
-			colour += out_atten * ray_trace(out_ray, root, ambient, lights, eye, depth - 1);
+			colour += out_atten * ray_trace(out_ray, root, ambient, lights, eye, depth - 1, scene_text);
 		}
 		// std::cout << "scatter back" << std::endl;
 		return colour;
@@ -100,6 +99,7 @@ noIntersection:
 	colour = (1 - direc.y) * vec3(1.0, 0.702, 0.388) + (direc.y) * vec3(0.357, 0.675, 0.831);
 
 	// colour = (1 - direc.y) * vec3(0, 0.153, 0.878) + (direc.y) * vec3(0, 0.027, 0.161);
+
 }
 	return colour;
 }

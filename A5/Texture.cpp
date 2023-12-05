@@ -12,7 +12,7 @@ Texture::Texture(const std::string &fname)
 {
     // Decode the image
     unsigned error = lodepng::decode(image, m_width, m_height, TEXTURE_DIR+fname, LCT_RGB);
-
+    // std::cout <<"decode" << fname << std::endl;
     if (error)
     {
         std::cerr << "decoder error " << fname << std::endl;
@@ -20,7 +20,7 @@ Texture::Texture(const std::string &fname)
     }
 }
 
-glm::vec3 Texture::colour(double u, double v){
+glm::vec3 Texture::colour(double u, double v) const {
     // if (!(0 <= u && u <= 1)) std::cerr << "No u" << std::endl;
     // if (!(0 <= v && v <= 1)) std::cerr << "No v" << std::endl;
 

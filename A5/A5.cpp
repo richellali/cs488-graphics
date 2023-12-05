@@ -27,7 +27,7 @@ void echoProgress(int now, int total)
 void traceColorPerRow(SceneNode *root, Integrator *inte, Image *image, const glm::vec3 &eye,
 					  uint j, size_t h, size_t w,
 					  const glm::vec3 &x, const glm::vec3 &y, const glm::vec3 &bot_left_direction,
-					  const glm::vec3 &ambient, const std::list<Light *> &lights)
+					  const glm::vec3 &ambient, const std::list<Light *> &lights, const Texture *scene_text)
 {
 	initRNG();
 	// const std::list<Light *> lights;
@@ -50,12 +50,12 @@ void traceColorPerRow(SceneNode *root, Integrator *inte, Image *image, const glm
 		{
 			vec3 random_p = random_in_unit_disk();
 			Ray ray = Ray(eye, direction + 0.5 * random_p.x * x + 0.5 * random_p.y * y);
-			colour += inte->ray_trace(ray, root, ambient, lights, eye, depth);
+			colour += inte->ray_trace(ray, root, ambient, lights, eye, depth, scene_text);
 		}
 		colour /= SAMPLE_SIZE;
 #else
 		Ray ray = Ray(eye, direction);
-		colour = inte->ray_trace(ray, root, ambient, lights, eye, depth);
+		colour = inte->ray_trace(ray, root, ambient, lights, eye, depth, scene_text);
 		// if (inte->produceImage(ray)){
 		// 	// std::cout << "hit " << i << ", " << j << std::endl;
 		// 	colour = vec3(1.0f, 1.0f, 1.0f);
@@ -89,7 +89,8 @@ void A5_Render(
 	const glm::vec3 &ambient,
 	const std::list<Light *> &lights)
 {
-	#ifdef RENDER_AREA_LIGHT
+
+#ifdef RENDER_AREA_LIGHT
 	std::list<AreaLight *> a_lights;
 	root->collect_lights(a_lights);
 
@@ -97,13 +98,14 @@ void A5_Render(
 	{
 		root->lights_vec.push_back(l);
 	}
-	const std::list<Light *> c_lights;
-	for (auto *l : a_lights){
+	std::list<Light *> c_lights;
+	for (auto *l : a_lights)
+	{
 		c_lights.push_back(l);
 	}
-	#else
-	const std::list<Light *> c_lights = lights;
-	#endif
+#else
+	std::list<Light *> c_lights = lights;
+#endif
 
 	// Fill in raytracing code here...
 
@@ -122,8 +124,6 @@ void A5_Render(
 			  << "ambient: " << glm::to_string(ambient) << std::endl
 			  << "\t"
 			  << "lights{" << std::endl;
-
-	
 
 	// for (const Light *light : lights)
 	// {
@@ -154,28 +154,33 @@ void A5_Render(
 	uint progress = 0;
 #endif
 
+	Integrator *inte;
+#ifdef RENDER_PHOTON_MAP
 	PhotonMapper *pMapper = new PhotonMapper();
-	pMapper->emitPhotons(root, c_lights);
+	// pMapper->emitPhotons(root, c_lights);
+	inte = pMapper;
+#else
+	PathTracer *pTracer = new PathTracer();
+	inte = pTracer;
+#endif
 
-	// PathTracer *pTracer =  new PathTracer();
+	Texture *scene_text = new Texture("night_scene.png");
 
 	// colouring every pixel in the screen
 	for (uint j = 0; j < h; j++)
 	{
 
 #ifdef RENDER_MULTITHREADING
-		threads.push_back(std::thread([root, pMapper, im_ptr,
-		eye, j, h, w, x, y, bot_left_direction,
-		ambient,c_lights]()
-		{
-			traceColorPerRow(root, pMapper,  im_ptr,
-									  eye, j, h, w, x, y, bot_left_direction,
-									  ambient, c_lights);
-		}));
+		threads.push_back(std::thread([root, inte, im_ptr,
+									   eye, j, h, w, x, y, bot_left_direction,
+									   ambient, c_lights, scene_text]()
+									  { traceColorPerRow(root, inte, im_ptr,
+														 eye, j, h, w, x, y, bot_left_direction,
+														 ambient, c_lights, scene_text); }));
 #else
 		traceColorPerRow(root, pMapper, &image, eye, j, h, w, x, y, bot_left_direction,
-						 ambient, c_lights);
-						//  break;
+						 ambient, c_lights, scene_text);
+		//  break;
 #endif
 	}
 
@@ -187,4 +192,6 @@ void A5_Render(
 		echoProgress(progress, h);
 	}
 #endif
+
+	if (scene_text != nullptr) delete scene_text;
 }

@@ -128,13 +128,6 @@ glm::vec3 AreaLight::getRandomPoint()
 void AreaLight::getRandomPointAndDirection(glm::vec3 &pt, glm::vec3 &direction) // TODO:: where to put normal
 {
   m_mesh->getRandomPointAndDirection(trans, t_invtrans, pt, direction);
-
-  // std::cout << to_string(direction) << std::endl;
-
-  // pt = vec3(0.0f, 1.0f, 430.0f);
-  // float pdf;
-  // direction = random_direction_hemisphere(pdf);
-  // direction = orthonormalBasis(vec3(0, 0, -1)) * direction;
 }
 
 // TODO

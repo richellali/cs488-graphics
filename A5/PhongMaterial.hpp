@@ -27,7 +27,7 @@ public:
   glm::vec3 ks(double u=0.0, double v=0.0);
   glm::vec3 ke();
   glm::vec3 ka();
-  double p();
+  double p(double u=0.0, double v=0.0);
 
   void set_kd(glm::vec3 kd);
   void set_ks(glm::vec3 ks);
@@ -37,6 +37,7 @@ public:
 
   void set_map_kd(const std::string &map_kd_name);
   void set_map_ks(const std::string &map_ks_name);
+  void set_map_ns(const std::string &map_ns_name);
 
   void set_kd_texture(Texture *texture);
   void set_ks_texture(Texture *texture);
@@ -51,16 +52,13 @@ public:
   bool isGlossy();
   bool isEmissive(); // TODO
 
-  glm::vec3 getReflectanceProb();
 
   void getReflectedRay(glm::vec3 &hit_point, glm::vec3 &in_ray, Ray &out_ray, glm::vec3 &normal, bool force_specular=false);
   bool getRefractedRay(HitRecord &rec, glm::vec3 &in_ray, Ray &out_ray, glm::vec3 &normal, bool force_specular=false);
   glm::vec3 radomPointOnFuzzySphere(glm::vec3 &reflected_point, glm::vec3 &reflected_direction);
   void getDiffuseReflected(HitRecord &rec, Ray &out_ray);
 
-  glm::vec3 BRDF(Ray &ray, HitRecord &rec, Ray &out_ray, float &pdf);
-  glm::vec3 sample_diffuse(glm::vec3 &normal, float &pdf);
-  glm::vec3 evaluateBRDF(glm::vec3 wi, glm::vec3 wo);
+  glm::vec3 sample_diffuse(glm::vec3 &normal);
 
   double attenuation;
   double m_shininess;
@@ -74,12 +72,6 @@ private:
 
   Texture *map_kd;
   Texture *map_ks;
+  Texture *map_ns;
 
-  bool isSameHemiSphere(glm::vec3 &w, glm::vec3 &v);
-  glm::vec3 f_diffuse(glm::vec3 &wi, glm::vec3 &wo);
-  glm::vec3 f_perfect_reflect();
-  glm::vec3 f_perfect_transmission();
-
-  void sample_ray(HitRecord &rec, Ray &ray, Ray &out_ray, bool &goTrans, float &pdf);
-  
 };

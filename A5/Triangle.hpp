@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include "utils.hpp"
+#include <string.h>
 
 class Triangle
 {
@@ -34,6 +35,8 @@ class MeshTriangle
 	size_t n2;
 	size_t n3;
 
+	std::string mat_name="";
+
 	MeshTriangle( size_t pv1, size_t pv2, size_t pv3 )
 		: v1(pv1)
   		, v2(pv2)
@@ -61,8 +64,9 @@ class MeshTriangle
 		, n3( 0 )
 	{}
 
-	MeshTriangle(size_t v[3], size_t t[3], size_t n[3])
-		: v1(v[0])
+	MeshTriangle(const std::string &_name, size_t v[3], size_t t[3], size_t n[3])
+		: mat_name(_name)
+		, v1(v[0])
   		, v2(v[1])
   		, v3(v[2])
 		, uv1( t[0] )

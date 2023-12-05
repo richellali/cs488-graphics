@@ -24,8 +24,9 @@ BlenderMesh::BlenderMesh(const std::string &fname)
 
     while (ifs >> code) 
     {
-        // std::cout << "mesh name: " << code << std::endl;
+        std::cout << "mesh name: " << code << std::endl;
         mesh_map[code] = new Mesh(fname, ifs, pre_idx_v, pre_idx_vn, pre_idx_vt);
+        if (code == "table_Mesh" ) mesh_map[code]->useBary=false;
     }
 }
 
@@ -48,16 +49,19 @@ bool BlenderMesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) 
 
     for (auto &m : mesh_map)
     {
-        if (m.second->isLight) continue;
+        
+        if (!(  m.first == "tab1_Mesh" 
+        || m.first == "Podest_Mesh"
+        // || m.first == "snowman1_Mesh"
+        )) continue;
+
+        
+
+        // if (m.second->isLight) continue;
         // std::cout << m_name << std::endl;
         HitRecord tempRec;
         if (m.second->intersected(ray, tmin, t, tempRec)) {
             t = tempRec.t;
-
-            // rec.t = tempRec.t;
-            // rec.p = tempRec.p;
-            // rec.normal = tempRec.normal;
-            // rec.uv = tempRec.uv;
             rec = tempRec;
 
             rec.mat_name = m.second->mat_name;

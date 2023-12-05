@@ -11,7 +11,7 @@ typedef unsigned int uint;
 class Texture {
     public:
     Texture(const std::string& fname );
-    glm::vec3 colour(double u, double v);
+    glm::vec3 colour(double u, double v) const;
     std::string fname;
 
     private:

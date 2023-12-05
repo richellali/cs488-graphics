@@ -18,8 +18,9 @@ using namespace glm;
 bool Mesh::rayTriangleIntersect(
     const vec3 &orig, const vec3 &dir,
     const vec3 &v0, const vec3 &v1, const vec3 &v2,
-    float &t)
+    float &t, float &u, float &v)
 {
+  // std::cout << fname << std::endl;
   float eps = 0.000001;
   // compute the plane's normal
   vec3 v0v1 = v1 - v0;
@@ -27,15 +28,20 @@ bool Mesh::rayTriangleIntersect(
 
   vec3 planeNormal = cross(v0v1, v0v2);
 
+  float denom = dot(planeNormal, planeNormal);
+
   // check if the ray and plane are parallel
   if (abs(dot(planeNormal, dir)) < eps)
   {
+    // if (fname == "smstdodeca.obj") std::cout << "plane" << std::endl;
     return false;
   }
 
   float D = -dot(planeNormal, v0);
   t = -(dot(planeNormal, orig) + D) / dot(planeNormal, dir);
-  if (t < 0) return false;
+  if (t < 0) { 
+    // if (fname == "smstdodeca.obj") std::cout <<2<< std::endl;
+    return false;}
 
   vec3 p = orig + t * dir;
 
@@ -45,17 +51,26 @@ bool Mesh::rayTriangleIntersect(
   vec3 edge0 = v1 - v0;
   vec3 vp0 = p - v0;
   C = cross(edge0, vp0);
-  if (dot(planeNormal, C) < 0) return false;
+  if (dot(planeNormal, C) < 0){ 
+    // if (fname == "smstdodeca.obj") std::cout <<3<< std::endl;
+    return false;}
 
   vec3 edge1 = v2 - v1;
   vec3 vp1 = p - v1;
   C = cross(edge1, vp1);
-  if (dot(planeNormal, C) < 0) return false;
+  if ((u = dot(planeNormal, C)) < 0){ 
+    // if (fname == "smstdodeca.obj") std::cout <<4<< std::endl;
+    return false;}
+  
 
   vec3 edge2 = v0 - v2;
   vec3 vp2 = p - v2;
   C = cross(edge2, vp2);
-  if (dot(planeNormal, C) < 0) return false;
+  if ((v = dot(planeNormal, C)) < 0) return false;
+
+
+  u /= denom;
+  v /= denom;
 
   return true;
 }
@@ -108,6 +123,7 @@ void Mesh::readObjFile(std::ifstream& ifs, size_t &pre_idx_v, size_t &pre_idx_vn
   double vx, vy, vz;
   size_t s1, s2, s3;
   std::string s;
+  std::string m_name;
 
   size_t sub_index_v = pre_idx_v;
   size_t sub_index_vn = pre_idx_vn;
@@ -176,12 +192,13 @@ void Mesh::readObjFile(std::ifstream& ifs, size_t &pre_idx_v, size_t &pre_idx_vn
         }
       }
       
-      m_faces.push_back(MeshTriangle(v_ind, t_ind, n_ind));
+      m_faces.push_back(MeshTriangle(m_name, v_ind, t_ind, n_ind));
     } 
     else if (code == "usemtl")
     {
       ifs >> s;
       mat_name = s;
+      m_name = s;
     }
     else if (code == "g" || code == "o")
     {
@@ -293,8 +310,7 @@ void Mesh::getRandomPointAndDirection(glm::mat4 &trans, glm::mat4 &t_invtrans, g
   vec4 transPoint = trans * vec4(getRandomPoint(rand_idx), 1.0f);
   pt = vec3(transPoint.x, transPoint.y, transPoint.z);
 
-  float pdf;
-  vec3 dir = random_direction_hemisphere(pdf);
+  vec3 dir = random_direction_hemisphere();
   
   glm::vec3 p1 = m_vertices[m_faces[rand_idx].v1];
   glm::vec3 p2 = m_vertices[m_faces[rand_idx].v2];
@@ -311,12 +327,11 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
   bool isIntersected = false;
   float tClosest = tmax;
   vec2 uv;
+  float u, v; // Barycentric Coordinates
+  std::string m_name;
 
   vec3 normal;
-  vec3 shading_normal;
-
-  // if (!(f_name == "table_Mesh" || f_name == "Podest_Mesh") ) return false; // temp
-
+  vec3 shading_normal = vec3(0.0f);
 
 #ifdef RENDER_BOUNDING_VOLUMES
   if (nh_box && !nh_box->intersected(ray, tmin, tmax, rec))
@@ -327,6 +342,7 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
   }
 #else
   HitRecord temp;
+  
 
   if (nh_box && !nh_box->intersected(ray, tmin, tmax, temp))
   {
@@ -340,30 +356,44 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
     //  std::cout << triangle.v1 << ", " << triangle.v1 << ", " << triangle.v1<< std::endl;
     // std::cout << to_string( m_vertices[triangle.v1]) << ", " << to_string( m_vertices[triangle.v1]) << ", " << to_string( m_vertices[triangle.v1])<< std::endl;
     if (rayTriangleIntersect(ray.getOrigin(), ray.getDirection(),
-                             m_vertices[triangle.v1], m_vertices[triangle.v2], m_vertices[triangle.v3], t) &&
+                             m_vertices[triangle.v1], m_vertices[triangle.v2], m_vertices[triangle.v3], t, u, v) &&
         t < tClosest && t > tmin)
     {
       tClosest = t;
       isIntersected = true;
       
       normal = cross(m_vertices[triangle.v2] - m_vertices[triangle.v1], m_vertices[triangle.v3] - m_vertices[triangle.v1]);
-      
+      m_name = triangle.mat_name;
       if (!m_normals.empty()) shading_normal = m_normals[triangle.v1];
-      if (hasVt) 
+      if (hasVt && useBary ) 
+      {
+        uv = m_uv_coords[triangle.uv1] * u  + m_uv_coords[triangle.uv2] * v
+          + (1-u-v) * m_uv_coords[triangle.uv3];
+          //  std::cout << to_string(m_uv_coords[triangle.uv1]) << ", " <<  to_string(uv) << std::endl;
+      } else if (hasVt)
       {
         uv = m_uv_coords[triangle.uv1];
-        // std::cout << "uv index: " << triangle.uv1 << std::endl;
       }
+      if (hasVn && useBary)
+      {
+        shading_normal = m_normals[triangle.n1] * u +  m_normals[triangle.n2] * v
+          + (1-u-v) *m_normals[triangle.n3];
+      }
+
     }
   
   }
 
+
   if (isIntersected)
   {
+    // std::cout << fname << std::endl;
     rec.t = tClosest;
     rec.p = ray.at(rec.t);
     rec.set_face_normal(ray.getDirection(), normal);
     rec.shading_normal = shading_normal;
+
+    if (m_name != "") mat_name = m_name;
 
     if (hasVt)
     {

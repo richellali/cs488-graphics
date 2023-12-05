@@ -73,14 +73,13 @@ vec3 random_on_sphere(double r)
 	}
 }
 
-vec3 random_direction_hemisphere(float &pdf)
+vec3 random_direction_hemisphere()
 {
 	double r1 = random_double();
 	double r2 = random_double();
 
 	double phi = 2 * Pi * r1;
 	double theta = acos(sqrt(r2));
-	pdf = abs(cos(theta)) * invPi;
 
 	return vec3(
 		cos(phi) * sqrt(1-r2),
@@ -104,27 +103,6 @@ glm::dmat3 orthonormalBasis(const glm::dvec3& n)
     };
 }
 
-glm::vec3 LocalToRender(glm::vec3 normal, glm::vec3 v)
-{
-	vec3 x;
-	vec3 y = normalize(normal);
-	if (abs(y.x)  < 0.9f)
-	{
-		x = normalize(cross(y, vec3(0.0f, 1.0f, 0.0f)));
-	} else{
-		x = normalize(cross(y, vec3(0.0f, 0.0f, -1.0f)));
-	}
-	
-	vec3 z = normalize(cross(x, y));
-
-	vec3 ret;
-  	for (int i = 0; i < 3; ++i) {
-    	ret[i] = v[0] * x[i] + v[1] * y[i] + v[2] * z[i];
-  	}
-  	return ret;
-}
-
-
 vec3 comp_mul(vec3 &v1, vec3 &v2)
 {
     return vec3(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
@@ -136,30 +114,4 @@ void russian_roulette_prob(vec3 &kd, vec3 &ks, float &Pd, float &Ps, float &Pa)
     Pd = compAdd(kd) / (compAdd(kd) + compAdd(ks)) * Pr; // prob of diffuse
     Ps = Pr - Pd;                                        // prob of specular
     Pa = 0.005;
-}
-
-
-void compDPDU(glm::vec3 &t, glm::vec3 &b)
-{
-	vec3 n = vec3(0, -1, 0);
-		if (std::abs(n[1]) < 0.9f) {
-    	t = normalize(cross(n, vec3(0, 1, 0)));
-  	} else {
-    	t = normalize(cross(n, vec3(0, 0, -1)));
-  	}
-  	b = normalize(cross(t, n));
-}
-
-glm::vec3 worldToLocal(const glm::vec3& v, const glm::vec3& lx, const glm::vec3& ly,
-                          const glm::vec3& lz) {
-  return vec3(dot(v, lx), dot(v, ly), dot(v, lz));
-}
-
-glm::vec3 localToWorld(const glm::vec3& v, const glm::vec3& lx, const glm::vec3& ly,
-                          const glm::vec3& lz) {
-  glm::vec3 ret;
-  for (int i = 0; i < 3; ++i) {
-    ret[i] = v[0] * lx[i] + v[1] * ly[i] + v[2] * lz[i];
-  }
-  return ret;
 }

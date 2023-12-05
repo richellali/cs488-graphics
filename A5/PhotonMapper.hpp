@@ -20,18 +20,9 @@ public:
     glm::vec3 radiance_estimate(glm::vec3 &pos, glm::vec3 view, glm::vec3 normal, float cos_theta, glm::vec3 out_dir, PhongMaterial *material, MapType type);
 
     glm::vec3 ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &ambient,
-                        const std::list<Light *> &lights, const glm::vec3 &eye, int depth) override;
+                        const std::list<Light *> &lights, const glm::vec3 &eye, int depth, const Texture *scene_text) override;
 
     bool produceImage(Ray &ray) override;
-    glm::vec3 computeIndirectIllumination(SceneNode *root, glm::vec3 &pos, glm::vec3 &normal,
-                                          PhongMaterial *material, float cos_theta, bool inMonteCarlo);
-    glm::vec3 MonteCarlo_IndirectSample(SceneNode *root, Ray &ray);
-
-    glm::vec3 MonteCarlo_PathTrace(SceneNode *root, Ray &ray);
-    glm::vec3 computeSpecularIllumination(SceneNode *root, Ray &in_ray,
-                                          HitRecord &rec, PhongMaterial *material, glm::vec3 &view, float cos_theta);
-
-    glm::vec3 computeDirectIllum(SceneNode *root, HitRecord &rec, Ray &ray);
 
 private:
     KDTree causticPhotonMap;
