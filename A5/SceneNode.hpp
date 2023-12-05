@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include "Ray.hpp"
 #include "HitRecord.hpp"
+#include "Light.hpp"
 
 #include <list>
 #include <string>
@@ -43,6 +44,8 @@ public:
     void scale(const glm::vec3& amount);
     void translate(const glm::vec3& amount);
 
+    virtual void collect_lights(std::list<AreaLight *> &lights);
+
 
 	friend std::ostream & operator << (std::ostream & os, const SceneNode & node);
 
@@ -51,6 +54,7 @@ public:
     glm::mat4 invtrans;
     
     std::list<SceneNode*> children;
+    std::vector<Light*> lights_vec;
 
 	NodeType m_nodeType;
 	std::string m_name;

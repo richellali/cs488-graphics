@@ -2,9 +2,9 @@
 
 using namespace glm;
 
-BlenderNode::BlenderNode( const std::string & name, Primitive *prim )
+BlenderNode::BlenderNode( const std::string & name, BlenderMesh *prim )
     : SceneNode(name)
-    , m_primitive(prim)
+    , m_b_mesh(prim)
     , m_mat_lib(nullptr)
 {
     m_nodeType = NodeType::BlenderNode;
@@ -16,7 +16,8 @@ void BlenderNode::setMaterialLib(MaterialLib * material_lib)
 }
 
 BlenderNode::~BlenderNode() {
-	if ( m_mat_lib != nullptr) delete m_primitive;
+	if ( m_mat_lib != nullptr) delete m_mat_lib;
+	if (m_b_mesh != nullptr) delete m_b_mesh;
 }
 
 bool BlenderNode::intersected(Ray &ray, float tmin, HitRecord &rec)
@@ -28,7 +29,7 @@ bool BlenderNode::intersected(Ray &ray, float tmin, HitRecord &rec)
 	Ray transRay = Ray(vec3(transOrig.x, transOrig.y, transOrig.z),
 	vec3(transDir.x, transDir.y, transDir.z));
 
-	bool isIntersected = m_primitive->intersected(transRay, tmin, rec.t, tempRec);
+	bool isIntersected = m_b_mesh->intersected(transRay, tmin, rec.t, tempRec);
 	// std::cout << "blender back" << std::endl;
 
 	if (isIntersected) {
@@ -41,6 +42,7 @@ bool BlenderNode::intersected(Ray &ray, float tmin, HitRecord &rec)
         // TODO:: fix
 		// rec.material = m_material;
 		// std::cout << "Hit mat: "<< tempRec.mat_name << std::endl;
+		
 		rec.material =  m_mat_lib->get_mat(tempRec.mat_name);
 		// rec.texture = m_mat_lib;
 	}
@@ -61,4 +63,18 @@ bool BlenderNode::intersected(Ray &ray, float tmin, HitRecord &rec)
 	}
 
 	return isIntersected;
+}
+
+void BlenderNode::collect_lights(std::list<AreaLight *> &lights)
+{
+	std::map<std::string, glm::vec3> emissiveNamesAndKe = m_mat_lib->getEmissiveNamesAndKe();
+	m_b_mesh->collect_lights(lights, emissiveNamesAndKe);
+
+	SceneNode::collect_lights(lights);
+
+	for (auto l : lights)
+	{
+		l->t_invtrans = transpose(invtrans) * l->t_invtrans;
+		l->trans = trans * l->trans;
+	}
 }

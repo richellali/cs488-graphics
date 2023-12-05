@@ -3,6 +3,9 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <map>
+#include <string.h>
+#include <list>
 
 #include "Ray.hpp"
 #include "HitRecord.hpp"

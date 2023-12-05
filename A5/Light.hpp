@@ -6,41 +6,81 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include "Triangle.hpp"
+#include "Mesh.hpp"
 
 #include <glm/glm.hpp>
-// #define RENDER_SOFT_SHADOW
-
-struct LightTriangle
-{
-  size_t v1;
-	size_t v2;
-	size_t v3;
-
-  LightTriangle( size_t pv1, size_t pv2, size_t pv3 )
-  : v1(pv1)
-  , v2(pv2)
-  , v3(pv3)
-  {}
-};
+// #define RENDER_SOFT
+enum LightType{
+    NONE,
+    POINT,
+    AREA
+  };
 
 // Represents a simple point light.
 class Light {
-public:
-#ifdef RENDER_SOFT_SHADOW
-  Light(const std::string &fname);
-  std::vector<glm::vec3> m_vertices;
-	std::vector<LightTriangle> m_faces;
+  public:
+  
+  Light()
+  : colour(glm::vec3(0.0f)), type(LightType::NONE){}
 
-  size_t lightDenseNum();
+  Light( LightType _type)
+  : type(_type) {}
 
-  size_t light_density;
-#else
-  Light();
+  Light(glm::vec3 &colour, LightType _type);
+  Light(glm::vec3 &col, double _falloff[3], glm::vec3 &pos, LightType _type);
+
+  virtual ~Light(){};
+
+  virtual glm::vec3 getRandomPoint(){return position;}
+  virtual void getRandomPointAndDirection(glm::vec3 &pt, glm::vec3 &direction)=0;
+  virtual double getArea()=0;
+  virtual glm::vec3 getPower()=0;
+
+  LightType type;
   glm::vec3 position;
-#endif 
-
-  glm::vec3 colour; 
+  glm::vec3 colour; // Ke emission in material
   double falloff[3];
+};
+
+
+class PointLight : public Light {
+public:
+  PointLight();
+  PointLight(glm::vec3 &col, double _falloff[3], glm::vec3 &pos);
+
+  virtual ~PointLight(){}
+
+  glm::vec3 getRandomPoint() override;
+  void getRandomPointAndDirection(glm::vec3 &pt, glm::vec3 &direction) override;
+  double getArea() override;
+  glm::vec3 getPower() override;
+};
+
+class AreaLight : public Light{
+public:
+
+  // AreaLight(const std::string &fname);
+  AreaLight(Mesh *_mesh, glm::vec3 _colour);
+  virtual ~AreaLight(){}
+  // float getAtten();
+
+  // size_t lightDenseNum();
+  glm::vec3 getRandomPoint() override;
+  void getRandomPointAndDirection(glm::vec3 &pt, glm::vec3 &direction) override;
+  double getArea() override;
+  glm::vec3 getPower() override;
+
+  // std::vector<glm::vec3> m_vertices;
+	// std::vector<Triangle> m_faces;
+  // size_t light_density;
+
+  glm::mat4 trans;
+  glm::mat4 t_invtrans;
+
+  private:
+  Mesh * m_mesh;
+
 };
 
 std::ostream& operator<<(std::ostream& out, const Light& l);

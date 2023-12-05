@@ -1,6 +1,7 @@
 #include "MaterialLib.hpp"
 #include <sstream>
 #include <fstream>
+#include <iostream>
 
 using namespace glm;
 
@@ -71,6 +72,18 @@ MaterialLib::MaterialLib(const std::string &fname)
             ifs >> vx;
             cur_mat->m_shininess = vx;
         }
+        else if (code == "Ke")
+        {
+            ifs >> vx >> vy >> vz;
+
+            cur_mat->set_ke(glm::vec3(vx, vy, vz));
+        }
+        else if (code == "Ka")
+        {
+            ifs >> vx >> vy >> vz;
+
+            cur_mat->set_ka(glm::vec3(vx, vy, vz));
+        }
     }
 }
 
@@ -83,5 +96,20 @@ MaterialLib::~MaterialLib(){
 
 Material *MaterialLib::get_mat(std::string &mat_name)
 {
+    if (m_material_map.count(mat_name) <= 0) std::cout << "cannot find " << mat_name << std::endl;
     return m_material_map[mat_name];
+}
+
+std::map<std::string, glm::vec3> MaterialLib::getEmissiveNamesAndKe()
+{
+    std::map<std::string, glm::vec3> emissives;
+
+    for (auto m : m_material_map)
+    {
+        if (m.second->isEmissive()){
+            emissives[m.first] = m.second->ke();
+        }
+    }
+
+    return emissives;
 }

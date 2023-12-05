@@ -12,6 +12,8 @@
 #define RENDER_ANTI_ALIASING
 #define RENDER_RECURSIVE_RAY_TRACING
 #define RENDER_MULTITHREADING
+#define RENDER_MONTE_CARLO
+// #define RENDER_AREA_LIGHT
 
 void A5_Render(
 		// What to render

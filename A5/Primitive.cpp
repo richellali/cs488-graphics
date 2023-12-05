@@ -5,7 +5,9 @@
 #include "polyroots.hpp"
 #include <iostream>
 #include <glm/ext.hpp>
+#include "utils.hpp"
 
+extern const float Pi;
 using namespace glm;
 
 float min_but_greater_than_tmin(float tmin, float t1, float t2) {
@@ -58,9 +60,8 @@ NonhierSphere::~NonhierSphere()
 
 void NonhierSphere::get_uv(HitRecord &rec) {
     vec3 d = normalize(m_pos - rec.p);
-    double PI = 3.1415926;
 
-    rec.uv = vec2(0.5 + atan2(d.z, d.x) / (2*PI), 0.5 + asin(d.y) / PI);
+    rec.uv = vec2(0.5 + atan2(d.z, d.x) / (2*Pi), 0.5 + asin(d.y) / Pi);
 }
 
 bool NonhierSphere::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) {

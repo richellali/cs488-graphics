@@ -401,9 +401,9 @@ extern "C" int gr_light_cmd(lua_State *L)
 
 #ifdef RENDER_SOFT_SHADOW
   const char *fname = luaL_checkstring(L, 1);
-  data->light = new Light(fname);
+  data->light = new AreaLight(fname);
 #else
-  Light l;
+  PointLight l;
 
   double col[3];
   get_tuple(L, 1, &l.position[0], 3);
@@ -412,7 +412,7 @@ extern "C" int gr_light_cmd(lua_State *L)
 
   l.colour = glm::vec3(col[0], col[1], col[2]);
 
-  data->light = new Light(l);
+  data->light = new PointLight(l.colour, l.falloff, l.position);
 #endif
 
   luaL_newmetatable(L, "gr.light");
@@ -459,6 +459,7 @@ extern "C" int gr_render_cmd(lua_State *L)
     luaL_argcheck(L, ldata != 0, 10, "Light expected");
 
     lights.push_back(ldata->light);
+
     lua_pop(L, 1);
   }
 

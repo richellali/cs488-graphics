@@ -166,3 +166,15 @@ bool SceneNode::intersected(Ray &ray, float tmin, HitRecord &rec){
 
 	return isIntersected;
 }
+
+void SceneNode::collect_lights(std::list<AreaLight *> &lights){
+	for(SceneNode * child : children) {
+		child->collect_lights(lights);
+	}
+
+	for (auto l : lights)
+	{
+		l->t_invtrans = transpose(invtrans) * l->t_invtrans;
+		l->trans = trans * l->trans;
+	}
+}

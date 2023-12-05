@@ -9,6 +9,7 @@ class HitRecord {
     public:
     double t=std::numeric_limits<float>::max();
     glm::vec3 normal;
+    glm::vec3 shading_normal;
     glm::vec3 p;
 
     Material *material;
