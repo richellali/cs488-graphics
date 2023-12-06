@@ -10,7 +10,7 @@
 #include "Ray.hpp"
 #include "Texture.hpp"
 
-// #define RENDER_ANTI_ALIASING
+#define RENDER_ANTI_ALIASING
 #define RENDER_RECURSIVE_RAY_TRACING
 #define RENDER_MULTITHREADING
 #define RENDER_PHOTON_MAP

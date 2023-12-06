@@ -21,7 +21,7 @@ float GLOBAL_MAX_DIST = 20;
 int CAUSTIC_MAX_SIZE = 100;
 float CAUSTIC_MAX_DIST = 2.5;
 
-int LIGHT_SAMPLES = 1;
+int LIGHT_SAMPLES = 10;
 
 PhotonMapper::PhotonMapper()
     : causticPhotonMap(), globalPhotonMap(),

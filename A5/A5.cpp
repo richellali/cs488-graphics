@@ -157,7 +157,7 @@ void A5_Render(
 	Integrator *inte;
 #ifdef RENDER_PHOTON_MAP
 	PhotonMapper *pMapper = new PhotonMapper();
-	// pMapper->emitPhotons(root, c_lights);
+	pMapper->emitPhotons(root, c_lights);
 	inte = pMapper;
 #else
 	PathTracer *pTracer = new PathTracer();

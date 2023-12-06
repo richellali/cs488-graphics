@@ -50,10 +50,10 @@ bool BlenderMesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec) 
     for (auto &m : mesh_map)
     {
         
-        if (!(  m.first == "tab1_Mesh" 
-        || m.first == "Podest_Mesh"
-        // || m.first == "snowman1_Mesh"
-        )) continue;
+        // if (!(  m.first == "tab1_Mesh" 
+        // || m.first == "Podest_Mesh"
+        // // || m.first == "snowman1_Mesh"
+        // )) continue;
 
         
 
