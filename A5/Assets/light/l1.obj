@@ -1,0 +1,9 @@
+o light
+v 200 202 430
+v 220 202 418
+v 210 190 425
+usemtl light.001
+f 1 2 3
+falloff 1.0 0.0 0.0
+colour 0.8 0.8 0.8
+density 400

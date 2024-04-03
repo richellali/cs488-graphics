@@ -365,19 +365,21 @@ bool Mesh::intersected(Ray &ray, float tmin, float tmax, HitRecord &rec)
       normal = cross(m_vertices[triangle.v2] - m_vertices[triangle.v1], m_vertices[triangle.v3] - m_vertices[triangle.v1]);
       m_name = triangle.mat_name;
       if (!m_normals.empty()) shading_normal = m_normals[triangle.v1];
-      if (hasVt && useBary ) 
-      {
-        uv = m_uv_coords[triangle.uv1] * u  + m_uv_coords[triangle.uv2] * v
-          + (1-u-v) * m_uv_coords[triangle.uv3];
-          //  std::cout << to_string(m_uv_coords[triangle.uv1]) << ", " <<  to_string(uv) << std::endl;
-      } else if (hasVt)
+      // if (hasVt && useBary ) 
+      // {
+      //   uv = m_uv_coords[triangle.uv1] * u  + m_uv_coords[triangle.uv2] * v
+      //     + (1-u-v) * m_uv_coords[triangle.uv3];
+      //     //  std::cout << to_string(m_uv_coords[triangle.uv1]) << ", " <<  to_string(uv) << std::endl;
+      // } else 
+      if (hasVt)
       {
         uv = m_uv_coords[triangle.uv1];
       }
       if (hasVn && useBary)
       {
-        shading_normal = m_normals[triangle.n1] * u +  m_normals[triangle.n2] * v
-          + (1-u-v) *m_normals[triangle.n3];
+        // shading_normal = m_normals[triangle.n1] * u +  m_normals[triangle.n2] * v
+        //   + (1-u-v) *m_normals[triangle.n3];
+        shading_normal = m_normals[triangle.n1] ;
       }
 
     }

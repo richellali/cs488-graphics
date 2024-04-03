@@ -4,6 +4,8 @@
 #include "Integrator.hpp"
 #include "KDTree.hpp"
 
+// #define GLOBAL_PHOTON
+
 enum MapType
 {
     GLOBAL,

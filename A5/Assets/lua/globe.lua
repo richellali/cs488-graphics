@@ -54,7 +54,7 @@ s1 = gr.nh_sphere('globe1', {0, 0, 0}, 0.1)
 s1:set_material(trans_glass_mat)
 s1:translate(0.05, -0.05, 0.25)
 
-c1 = gr.nh_cylinder('cylin', {0.0, 0.0, 0.0}, 0.06, 0.15)
+c1 = gr.nh_cylinder('cylin', {0,0,0}, 0.06, 0.15)
 c1:set_material(blue)
 c1:rotate('Y', 90)
 c1:translate(-0.3, -0.05, 0.1)
@@ -73,12 +73,12 @@ g_s:add_child(star)
 g_s:add_child(s1)
 
 
-table_node:add_child(glass_in)
-table_node:add_child(glass_out)
-table_node:add_child(g_s)
-table_node:add_child(t2)
+-- table_node:add_child(glass_in)
+-- table_node:add_child(glass_out)
+-- table_node:add_child(g_s)
+-- table_node:add_child(t2)
 
 gr.render(scene,
-	  'test.png', 1024, 1024,
+	  'test1.png', 512, 512,
 	  {0, 2, 30}, {0, 0, -1}, {0, 1, 0}, 50,
 	  {0.4, 0.4, 0.4}, {gr.light({20, 20, 20}, {0.8, 0.8, 0.8}, {1, 0, 0})})

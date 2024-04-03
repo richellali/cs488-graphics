@@ -169,8 +169,6 @@ void PhongMaterial::getReflectedRay(vec3 &hit_point, vec3 &in_ray, Ray &out_ray,
 
 bool PhongMaterial::getRefractedRay(HitRecord &rec, vec3 &in_ray, Ray &out_ray, vec3 &normal, bool force_specular)
 {
-	
-
 	float refraction_ratio = rec.front_face ? 1.0 / refractive_index : refractive_index;
 	double cos_theta = dot(in_ray, normal);
 	float k = 1.0f - refraction_ratio * refraction_ratio * (1.0f - cos_theta * cos_theta);

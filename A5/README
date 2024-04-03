@@ -1,33 +1,35 @@
 COMPILATION:
 premake4 gmake
 make
-./A5 Assets/$FILE.lua
+../A5 Assets/$FILE.lua
+
 
 INSTRUCTION:
-- BOUNDING_BOX is disabled by default
-- EXTRA FEATURE:
-  - I implemented texture mapping for spheres, cubes and planes, it can be
-    found in my unique scene
-  - Unique Scene: unique_scene.lua. I have also attached a png file of the
-    unique scene in the Assets folder, which has a name of unique_scene.png
-    - The scene is about a farm in a dry land. There is a meteor in the center
-      of the scene.
-- Bounding Box:
-  - I used rectangles to make bounding box.
-- Resolution:
-  - I changed all resolutions to 1024
-- Outputs: 
-  - nonhier2.lua outputs nonhier2.png
-  - nonhier.lua outputs nonhier-bb.png
-  - macho-cows outputs macho-cows-bb.png
-- Sample images in the Assets folder are:
-  - unique_scene.png
-  - simple.png
-  - simple-cows.png
-  - macho-cows.png
-  - macho-cows-bb.png
-  - real-macho-cows-newview.png
-  - hier.png
-  - nonhier.png
-  - nonhier-bb.png
-  - nonhier2.png
+In A5.hpp, comment or uncomment this to enable or disabled corresponding functionality
+  * #define RENDER_ANTI_ALIASING
+  * #define RENDER_RECURSIVE_RAY_TRACING
+  * #define RENDER_MULTITHREADING
+  * #define RENDER_PHOTON_MAP
+  * #define RENDER_AREA_LIGHT
+In PhotonMapper.hpp, comment or uncomment it to enable or disable global photon map
+  * #define GLOBAL_PHOTON
+
+PathTracer is default with soft shadow disabled.
+
+To modify material and see how reflection, refraction works, the 4th, 5th position of gr.material is roughness_radius, refractive index
+  * roughness < 0.9 -> completely diffuse
+  * 0.9 < roughtness < 1 -> glossy reflection/refraction
+  * roughness = 1 -> perfect reflection/refraction
+  * refractive < 0 -> not refracted
+
+OBJECTIVES
+1. Primitives(cone, cylinder)
+2. antialising
+3. reflection
+4. refraction
+5. glossy reflection
+6. glossy refraction
+7. soft shadow
+8. photon tracing
+9. photon mapping
+10. final scene

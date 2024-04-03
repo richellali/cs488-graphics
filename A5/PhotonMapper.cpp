@@ -21,7 +21,7 @@ float GLOBAL_MAX_DIST = 20;
 int CAUSTIC_MAX_SIZE = 100;
 float CAUSTIC_MAX_DIST = 2.5;
 
-int LIGHT_SAMPLES = 10;
+int LIGHT_SAMPLES = 1;
 
 PhotonMapper::PhotonMapper()
     : causticPhotonMap(), globalPhotonMap(),
@@ -70,26 +70,28 @@ void PhotonMapper::emitPhotons(SceneNode *root, const std::list<Light *> &lights
         double per_light_photons_ratio = compAdd(l->getPower()) / total_light_power;
         size_t cur_light_photons;
 
-        // // global
-        // size_t per_light_global_photons_num = per_light_photons_ratio * total_global_photons;
+        #ifdef GLOBAL_PHOTON
+        // global
+        size_t per_light_global_photons_num = per_light_photons_ratio * total_global_photons;
 
-        // // determine power of each photon
-        // vec3 global_photon_power = vec3(0.001, 0.001, 0.001);
-        // std::cout << "global photon power: "<<  to_string(global_photon_power) << std::endl;
+        // determine power of each photon
+        vec3 global_photon_power = vec3(0.001, 0.001, 0.001);
+        std::cout << "global photon power: "<<  to_string(global_photon_power) << std::endl;
 
-        // cur_light_photons = 0;
+        cur_light_photons = 0;
 
-        // while (cur_light_photons < per_light_global_photons_num)
-        // {
-        //     size_t cur_thread_photons =
-        //         cur_light_photons + per_thread_max_global_photons <= per_light_global_photons_num
-        //             ? per_thread_max_global_photons
-        //             : per_light_global_photons_num - per_thread_max_global_photons;
+        while (cur_light_photons < per_light_global_photons_num)
+        {
+            size_t cur_thread_photons =
+                cur_light_photons + per_thread_max_global_photons <= per_light_global_photons_num
+                    ? per_thread_max_global_photons
+                    : per_light_global_photons_num - per_thread_max_global_photons;
 
-        //     globalThreadWorks.push_back(ThreadWork(global_photon_power, cur_thread_photons, l));
+            globalThreadWorks.push_back(ThreadWork(global_photon_power, cur_thread_photons, l));
 
-        //     cur_light_photons += cur_thread_photons;
-        // }
+            cur_light_photons += cur_thread_photons;
+        }
+        #endif
 
         // caustic
         size_t per_light_caustic_photons_num = per_light_photons_ratio * total_caustic_photons;
@@ -112,6 +114,7 @@ void PhotonMapper::emitPhotons(SceneNode *root, const std::list<Light *> &lights
         }
     }
 
+    #ifdef GLOBAL_PHOTON
     std::vector<std::unique_ptr<std::thread>> g_threads(globalThreadWorks.size());
     globalPhotonsThread.resize(globalThreadWorks.size());
 
@@ -128,6 +131,7 @@ void PhotonMapper::emitPhotons(SceneNode *root, const std::list<Light *> &lights
     }
 
     std::cout << globalThreadWorks.size() << " global done" << std::endl;
+    #endif
 
     std::vector<std::unique_ptr<std::thread>> c_threads(causticThreadWorks.size());
     causticPhotonsThread.resize(causticThreadWorks.size());
@@ -432,8 +436,6 @@ glm::vec3 PhotonMapper::ray_trace(Ray &ray, SceneNode *root, const glm::vec3 &am
 
             // // colour += radiance_estimate(rec.p, v, normal, cos_theta, out_dir, material, MapType::GLOBAL);
             colour += radiance_estimate(rec.p, v, n, cos_theta, out_dir, material, MapType::CAUSTIC);
-            // if (depth == 0)
-            //     colour += computeIndirectIllumination(root, rec.p, n, material, cos_theta, false);
         }
         else
         {
@@ -458,11 +460,11 @@ noIntersection:
     // colour = (1 - direc.y) * vec3(1.0, 0.702, 0.388) + (direc.y) * vec3(0.357, 0.675, 0.831);
 
     
-    if (scene_text == nullptr) {
+    // if (scene_text == nullptr) {
         colour = (1 - direc.y) * vec3(0, 0.153, 0.878) + (direc.y) * vec3(0, 0.027, 0.161);
-    } else {
-        colour = scene_text->colour((direc.x+1)/2, 1-(direc.y+1)/2);
-    }
+    // } else {
+        // colour = scene_text->colour((direc.x+1)/2, 1-(direc.y+1)/2);
+    // }
 }
     return colour;
 }

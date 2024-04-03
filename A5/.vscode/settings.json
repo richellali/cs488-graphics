@@ -57,6 +57,10 @@
         "algorithm": "cpp",
         "__debug": "cpp",
         "atomic": "cpp",
-        "exception": "cpp"
+        "exception": "cpp",
+        "type_traits": "cpp",
+        "queue": "cpp",
+        "functional": "cpp",
+        "thread": "cpp"
     }
 }
